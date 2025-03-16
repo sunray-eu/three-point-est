@@ -1,3 +1,4 @@
+import i18n from "../i18n";
 import { calculateEstimate, calculateEffectiveCost } from "../tasks/templates";
 
 export const buildExportData = state => {
@@ -8,19 +9,19 @@ export const buildExportData = state => {
 
   // Updated header: new column "Hourly Rate" after "Cost Override"
   const header = [
-    "ID",
-    "Task Name",
-    "Task Desc",
-    "Best Case",
-    "Most Likely",
-    "Worst Case",
-    "Estimate",
-    "Cost Override",
-    "Hourly Rate",
-    "Group",
-    "Group Desc",
-    "Phase",
-    "Phase Desc"
+    i18n.t("ID"),
+    i18n.t("Task Name"),
+    i18n.t("Task Desc"),
+    i18n.t("Best Case"),
+    i18n.t("Most Likely"),
+    i18n.t("Worst Case"),
+    i18n.t("Estimate"),
+    i18n.t("Cost Override"),
+    i18n.t("Hourly Rate"),
+    i18n.t("Group"),
+    i18n.t("Group Desc"),
+    i18n.t("Phase"),
+    i18n.t("Phase Desc")
   ];
 
   const rows = Object.values(tasks).map(task => {

@@ -1,16 +1,18 @@
 {
   "name": "three-point-est",
-  "homepage": "https://janithl.github.io/three-point-est",
+  "homepage": "https://sunray-eu.github.io/three-point-est",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "gh-pages": "^1.2.0",
+    "i18next": "^24.2.3",
     "jspdf": "^3.0.0",
     "jspdf-autotable": "^5.0.2",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
+    "react-i18next": "^11",
     "react-redux": "^5.0.7",
-    "react-scripts": "1.1.4",
+    "react-scripts": "^5.0.1",
     "redux": "^4.0.0",
     "redux-persist": "^5.10.0",
     "reselect": "^3.0.1",
@@ -28,5 +30,17 @@
     "eslint-config-google": "^0.9.1",
     "react-testing-library": "^5.2.1"
   },
-  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
+  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }

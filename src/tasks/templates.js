@@ -29,17 +29,17 @@ export const taskTemplate = id => ({
 });
 
 // Update headings to include new fields
-export const taskRowFields = {
-  id: { placeholder: "ID", size: "1", disabled: true },
-  taskName: { placeholder: "Task Name", size: "2" },
-  taskDesc: { placeholder: "Description", size: "2" },
-  bestCase: { placeholder: "Best Case", size: "1", type: "number" },
-  mostLikely: { placeholder: "Most Likely", size: "1", type: "number" },
-  worstCase: { placeholder: "Worst Case", size: "1", type: "number" },
-  costOverride: { placeholder: "Cost (EUR)", size: "1", type: "number" },
-  groupId: { placeholder: "Group", size: "1" },
-  phaseId: { placeholder: "Phase", size: "1" }
-};
+export const getTaskRowFields = (t) => ({
+  id: { placeholder: t("ID"), size: "1", disabled: true },
+  taskName: { placeholder: t("Task Name"), size: "2" },
+  taskDesc: { placeholder: t("Description"), size: "2" },
+  bestCase: { placeholder: t("Best Case"), size: "1", type: "number" },
+  mostLikely: { placeholder: t("Most Likely"), size: "1", type: "number" },
+  worstCase: { placeholder: t("Worst Case"), size: "1", type: "number" },
+  costOverride: { placeholder: t("Cost (EUR)"), size: "1", type: "number" },
+  groupId: { placeholder: t("Group"), size: "1" },
+  phaseId: { placeholder: t("Phase"), size: "1" }
+});
 
 export const calculateEstimate = task =>
   (parseFloat(task.bestCase.value) +

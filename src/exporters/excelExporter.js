@@ -5,6 +5,7 @@ import {
   computePhaseSummaries,
   computeGroupSummaries
 } from "./summaryCalculator";
+import i18n from "../i18n";
 
 export const exportExcel = state => {
   // Build Tasks sheet (including Hourly Rate column)
@@ -20,7 +21,7 @@ export const exportExcel = state => {
     { wch: 10 },
     { wch: 10 },
     { wch: 12 },
-    { wch: 10 }, // Hourly Rate column
+    { wch: 10 },
     { wch: 15 },
     { wch: 20 },
     { wch: 15 },
@@ -46,24 +47,24 @@ export const exportExcel = state => {
 
   // Overall Summary table (key-value pairs) with Avg Hourly Rate
   const overallTable = [
-    ["Overall Summary"],
-    ["Total Tasks", overall.count],
-    ["Total Estimate", overall.sumEstimate.toFixed(2)],
-    ["Total Cost (EUR)", overall.sumCost.toFixed(2)],
-    ["Avg Estimate per Task", overall.count ? (overall.sumEstimate / overall.count).toFixed(2) : "0.00"],
-    ["Avg Hourly Rate", overall.averageRate]
+    [i18n.t("Overall Summary")],
+    [i18n.t("Total Tasks"), overall.count],
+    [i18n.t("Total Estimate"), overall.sumEstimate.toFixed(2)],
+    [i18n.t("Total Cost (EUR)"), overall.sumCost.toFixed(2)],
+    [i18n.t("Avg Estimate per Task"), overall.count ? (overall.sumEstimate / overall.count).toFixed(2) : "0.00"],
+    [i18n.t("Avg Hourly Rate"), overall.averageRate]
   ];
 
   // Per Phase Summary table: add new column "Hourly Rate"
   const phaseHeader = [
-    "Phase",
-    "Best Case",
-    "Most Likely",
-    "Worst Case",
-    "Average",
-    "Hourly Rate",
-    "Cost",
-    "Count"
+    i18n.t("Phase"),
+    i18n.t("Best Case"),
+    i18n.t("Most Likely"),
+    i18n.t("Worst Case"),
+    i18n.t("Estimate"),
+    i18n.t("Hourly Rate"),
+    i18n.t("Cost Override"),
+    i18n.t("Total Tasks")
   ];
   const phaseRows = phaseSummaries.map(item => [
     item.phaseName,
@@ -75,18 +76,18 @@ export const exportExcel = state => {
     item.sumCost.toFixed(2),
     item.count
   ]);
-  const phaseTable = [["Per Phase Summary"], phaseHeader, ...phaseRows];
+  const phaseTable = [[i18n.t("Per Phase Summary")], phaseHeader, ...phaseRows];
 
   // Per Group Summary table: add new column "Hourly Rate"
   const groupHeader = [
-    "Group",
-    "Best Case",
-    "Most Likely",
-    "Worst Case",
-    "Average",
-    "Hourly Rate",
-    "Cost",
-    "Count"
+    i18n.t("Group"),
+    i18n.t("Best Case"),
+    i18n.t("Most Likely"),
+    i18n.t("Worst Case"),
+    i18n.t("Estimate"),
+    i18n.t("Hourly Rate"),
+    i18n.t("Cost Override"),
+    i18n.t("Total Tasks")
   ];
   const groupRows = groupSummaries.map(item => [
     item.groupName,
@@ -98,7 +99,7 @@ export const exportExcel = state => {
     item.sumCost.toFixed(2),
     item.count
   ]);
-  const groupTable = [["Per Group Summary"], groupHeader, ...groupRows];
+  const groupTable = [[i18n.t("Per Group Summary")], groupHeader, ...groupRows];
 
   // Combine summary tables into one sheet with blank rows between
   const summaryData = [
@@ -122,7 +123,7 @@ export const exportExcel = state => {
 
   // Create workbook and add sheets
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, wsTasks, "Tasks");
-  XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+  XLSX.utils.book_append_sheet(wb, wsTasks, i18n.t("Tasks"));
+  XLSX.utils.book_append_sheet(wb, wsSummary, i18n.t("Summary"));
   XLSX.writeFile(wb, "tasks.xlsx", { bookType: "xlsx", cellStyles: true });
 };

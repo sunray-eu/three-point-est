@@ -1,5 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { exportJSON } from "../exporters/jsonExporter";
 import { exportExcel } from "../exporters/excelExporter";
 import { exportPDF } from "../exporters/pdfExporter";
@@ -27,6 +28,8 @@ import {
 } from "../phases/types";
 
 const Controls = ({ state, dispatch }) => {
+  const { t } = useTranslation();
+
   const handleSave = () => {
     exportJSON(state);
   };
@@ -137,7 +140,7 @@ const Controls = ({ state, dispatch }) => {
             className="btn btn-outline-primary btn-block"
             onClick={handleSave}
           >
-            Save
+            {t("Save")}
           </button>
         </div>
         <div className="col-md-3 mb-2">
@@ -149,7 +152,7 @@ const Controls = ({ state, dispatch }) => {
             className="btn btn-outline-success btn-block"
             onClick={handleExportExcel}
           >
-            Export to Excel
+            {t("Export to Excel")}
           </button>
         </div>
         <div className="col-md-3 mb-2">
@@ -158,7 +161,7 @@ const Controls = ({ state, dispatch }) => {
             className="btn btn-outline-warning btn-block"
             onClick={handleExportPDF}
           >
-            Export to PDF
+            {t("Export to PDF")}
           </button>
         </div>
       </div>
@@ -175,7 +178,7 @@ const Controls = ({ state, dispatch }) => {
                 dispatch({ type: TOGGLE_GROUPS, show: e.target.checked })
               }
             />
-            Show Groups
+            {t("Show Groups")}
           </label>
         </div>
         <div className="col-md-6">
@@ -188,7 +191,7 @@ const Controls = ({ state, dispatch }) => {
                 dispatch({ type: TOGGLE_PHASES, show: e.target.checked })
               }
             />
-            Show Phases
+            {t("Show Phases")}
           </label>
         </div>
       </div>
@@ -196,7 +199,7 @@ const Controls = ({ state, dispatch }) => {
       {/* Global Cost Settings */}
       <div className="card mb-3">
         <div className="card-body">
-          <h5 className="card-title">Global Cost (EUR per hour)</h5>
+          <h5 className="card-title">{t("Global Cost (EUR per hour)")}</h5>
           <div className="form-group mb-0">
             <input
               type="number"
@@ -211,7 +214,7 @@ const Controls = ({ state, dispatch }) => {
       {/* Group Settings */}
       <div className="card mb-3">
         <div className="card-body">
-          <h5 className="card-title">Group Settings</h5>
+          <h5 className="card-title">{t("Group Settings")}</h5>
           {groupsOrder.map(groupId => {
             const group = groups[groupId];
             return (
@@ -224,7 +227,7 @@ const Controls = ({ state, dispatch }) => {
                     onChange={e =>
                       handleGroupNameChange(group.id, e.target.value)
                     }
-                    placeholder="Group Name"
+                    placeholder={t("Task Name")}
                   />
                 </div>
                 {/* PHASE selection for this group */}
@@ -258,7 +261,7 @@ const Controls = ({ state, dispatch }) => {
                     onChange={e =>
                       handleGroupDescChange(group.id, e.target.value)
                     }
-                    placeholder="Description"
+                    placeholder={t("Task Desc")}
                   />
                 </div>
                 <div className="col-md-2">
@@ -269,7 +272,7 @@ const Controls = ({ state, dispatch }) => {
                     onChange={e =>
                       handleGroupCostChange(group.id, e.target.value)
                     }
-                    placeholder="Cost Override"
+                    placeholder={t("Cost Override")}
                   />
                 </div>
                 <div className="col-md-1 text-center">
@@ -281,7 +284,7 @@ const Controls = ({ state, dispatch }) => {
                         handleGroupIncludeChange(group.id, e.target.checked)
                       }
                     />{" "}
-                    Include
+                    {t("Include")}
                   </label>
                 </div>
                 <div className="col-md-1 text-right">
@@ -313,7 +316,7 @@ const Controls = ({ state, dispatch }) => {
                         dispatch({ type: REMOVE_GROUP, id: group.id })
                       }
                     >
-                      Remove
+                      {t("Remove")}
                     </button>
                   )}
                 </div>
@@ -325,7 +328,7 @@ const Controls = ({ state, dispatch }) => {
             className="btn btn-outline-primary btn-block"
             onClick={() => dispatch({ type: ADD_GROUP })}
           >
-            Add Group
+            {t("Add Group")}
           </button>
         </div>
       </div>
@@ -333,7 +336,7 @@ const Controls = ({ state, dispatch }) => {
       {/* Phase Settings */}
       <div className="card mb-3">
         <div className="card-body">
-          <h5 className="card-title">Phase Settings</h5>
+          <h5 className="card-title">{t("Phase Settings")}</h5>
           {phasesOrder.map(phaseId => {
             const phase = phases[phaseId];
             return (
@@ -346,7 +349,7 @@ const Controls = ({ state, dispatch }) => {
                     onChange={e =>
                       handlePhaseNameChange(phase.id, e.target.value)
                     }
-                    placeholder="Phase Name"
+                    placeholder={t("Task Name")}
                   />
                 </div>
                 <div className="col-md-2">
@@ -357,7 +360,7 @@ const Controls = ({ state, dispatch }) => {
                     onChange={e =>
                       handlePhaseDescChange(phase.id, e.target.value)
                     }
-                    placeholder="Description"
+                    placeholder={t("Task Desc")}
                   />
                 </div>
                 <div className="col-md-2">
@@ -368,7 +371,7 @@ const Controls = ({ state, dispatch }) => {
                     onChange={e =>
                       handlePhaseCostChange(phase.id, e.target.value)
                     }
-                    placeholder="Cost Override"
+                    placeholder={t("Cost Override")}
                   />
                 </div>
                 <div className="col-md-1 text-center">
@@ -380,7 +383,7 @@ const Controls = ({ state, dispatch }) => {
                         handlePhaseIncludeChange(phase.id, e.target.checked)
                       }
                     />{" "}
-                    Include
+                    {t("Include")}
                   </label>
                 </div>
                 <div className="col-md-2 text-right">
@@ -412,7 +415,7 @@ const Controls = ({ state, dispatch }) => {
                         dispatch({ type: REMOVE_PHASE, id: phase.id })
                       }
                     >
-                      Remove
+                      {t("Remove")}
                     </button>
                   )}
                 </div>
@@ -424,7 +427,7 @@ const Controls = ({ state, dispatch }) => {
             className="btn btn-outline-primary btn-block"
             onClick={() => dispatch({ type: ADD_PHASE })}
           >
-            Add Phase
+            {t("Add Phase")}
           </button>
         </div>
       </div>

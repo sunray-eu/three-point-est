@@ -85,7 +85,7 @@ test("check sums are correct", () => {
 });
 
 test("duplicate task button duplicates a task", () => {
-  const { getByText, getByDisplayValue, getAllByText } = renderWithRedux(<AppContainer />);
+  const { getByText, getByDisplayValue } = renderWithRedux(<AppContainer />);
 
   // Initially one task with name "Task 1"
   expect(getByDisplayValue("Task 1")).toBeDefined();

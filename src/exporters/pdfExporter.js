@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import { autoTable } from "jspdf-autotable";
+import i18n from "../i18n";
 import { calculateEstimate, calculateEffectiveCost } from "../tasks/templates";
 import "./charpentier-renaissance-normal";
 import "./DejaVuSans-normal";
@@ -91,38 +92,38 @@ export const exportPDF = state => {
   // Set custom fonts if needed (assumes fonts are loaded)
   doc.setFont("DejaVuSans");
   doc.setFontSize(18);
-  doc.text("Estimation Report Summary", margin, margin);
+  doc.text(i18n.t("Estimation Report Summary"), margin, margin);
   let currentY = margin + 10;
 
   // Overall Summary table (with Avg Hourly Rate)
   const overallData = [
-    ["Total Tasks", overall.count],
-    ["Total Estimate", overall.sumEstimate.toFixed(2)],
-    ["Total Cost (EUR)", overall.sumCost.toFixed(2)],
-    ["Avg Estimate per Task", overall.count ? (overall.sumEstimate / overall.count).toFixed(2) : "0.00"],
-    ["Avg Hourly Rate", overall.averageRate]
+    [i18n.t("Total Tasks"), overall.count],
+    [i18n.t("Total Estimate"), overall.sumEstimate.toFixed(2)],
+    [i18n.t("Total Cost (EUR)"), overall.sumCost.toFixed(2)],
+    [i18n.t("Avg Estimate per Task"), overall.count ? (overall.sumEstimate / overall.count).toFixed(2) : "0.00"],
+    [i18n.t("Avg Hourly Rate"), overall.averageRate]
   ];
   autoTable(doc, {
     startY: currentY,
-    head: [["Overall Summary", ""]],
+    head: [[i18n.t("Overall Summary"), ""]],
     body: overallData,
     theme: "plain",
     styles: { fontSize: 10, font: "DejaVuSans" },
-    headStyles: { fontSize: 12, fontStyle: "bold" },
+    headStyles: { fontSize: 12, fontStyle: "bold", font: "DejaVuSans" },
     margin: { left: margin, right: margin }
   });
   currentY = doc.lastAutoTable.finalY + 8;
 
   // Per Phase Summary table with extra "Hourly Rate" column
   const phaseTableHeader = [
-    "Phase",
-    "Best Case",
-    "Most Likely",
-    "Worst Case",
-    "Average",
-    "Hourly Rate",
-    "Cost",
-    "Count"
+    i18n.t("Phase"),
+    i18n.t("Best Case"),
+    i18n.t("Most Likely"),
+    i18n.t("Worst Case"),
+    i18n.t("Estimate"),
+    i18n.t("Hourly Rate"),
+    i18n.t("Cost Override"),
+    i18n.t("Total Tasks")
   ];
   const phaseTableBody = phaseSummaries.map(item => [
     item.name,
@@ -139,21 +140,21 @@ export const exportPDF = state => {
     head: [phaseTableHeader],
     body: phaseTableBody,
     styles: { fontSize: 9, font: "DejaVuSans" },
-    headStyles: { fillColor: [79, 129, 189], halign: "center" },
+    headStyles: { fillColor: [79, 129, 189], halign: "center", font: "DejaVuSans" },
     margin: { left: margin, right: margin }
   });
   currentY = doc.lastAutoTable.finalY + 8;
 
   // Per Group Summary table with extra "Hourly Rate" column
   const groupTableHeader = [
-    "Group",
-    "Best Case",
-    "Most Likely",
-    "Worst Case",
-    "Average",
-    "Hourly Rate",
-    "Cost",
-    "Count"
+    i18n.t("Group"),
+    i18n.t("Best Case"),
+    i18n.t("Most Likely"),
+    i18n.t("Worst Case"),
+    i18n.t("Estimate"),
+    i18n.t("Hourly Rate"),
+    i18n.t("Cost Override"),
+    i18n.t("Total Tasks")
   ];
   const groupTableBody = groupSummaries.map(item => [
     item.name,
@@ -170,7 +171,7 @@ export const exportPDF = state => {
     head: [groupTableHeader],
     body: groupTableBody,
     styles: { fontSize: 9, font: "DejaVuSans" },
-    headStyles: { fillColor: [79, 129, 189], halign: "center" },
+    headStyles: { fillColor: [79, 129, 189], halign: "center", font: "DejaVuSans" },
     margin: { left: margin, right: margin }
   });
 
@@ -193,14 +194,14 @@ export const exportPDF = state => {
       currentY = margin;
     }
     doc.setFontSize(14);
-    doc.text(`Phase: ${phase.name}`, margin, currentY);
+    doc.text(`${i18n.t("Phase")}: ${phase.name}`, margin, currentY);
     if (phase.description) {
       doc.setFontSize(10);
       doc.text(phase.description, margin, currentY + 5);
     }
     if (phase.includeInComputation === false) {
       doc.setTextColor(255, 0, 0);
-      doc.text("(Ignored)", margin + 60, currentY);
+      doc.text(`(${i18n.t("Ignored")})`, margin + 60, currentY);
       doc.setTextColor(0, 0, 0);
     }
     currentY += phaseHeaderHeight;
@@ -226,7 +227,7 @@ export const exportPDF = state => {
         currentY = margin;
       }
       doc.setFontSize(12);
-      doc.text(`Group: ${(groups[groupId] && groups[groupId].name) || groupId}`, margin, currentY);
+      doc.text(`${i18n.t("Group")}: ${(groups[groupId] && groups[groupId].name) || groupId}`, margin, currentY);
       if (groups[groupId] && groups[groupId].description) {
         doc.setFontSize(10);
         doc.text(groups[groupId].description, margin, currentY + 5);
@@ -236,24 +237,24 @@ export const exportPDF = state => {
       }
       if (groups[groupId] && groups[groupId].includeInComputation === false) {
         doc.setTextColor(255, 0, 0);
-        doc.text("(Ignored)", margin + 50, currentY - 8);
+        doc.text(`(${i18n.t("Ignored")})`, margin + 50, currentY - 8);
         doc.setTextColor(0, 0, 0);
       }
 
       // Build table data for tasks in the group (including Hourly Rate)
       const tableHeader = [
-        "ID",
-        "Task Name",
-        "Task Desc",
-        "Best",
-        "Likely",
-        "Worst",
-        "Estimate",
-        "HR Override",
-        "Hourly Rate",
-        "Cost",
-        "Group",
-        "Phase",
+        i18n.t("ID"),
+        i18n.t("Task Name"),
+        i18n.t("Task Desc"),
+        i18n.t("Best Case"),
+        i18n.t("Most Likely"),
+        i18n.t("Worst Case"),
+        i18n.t("Estimate"),
+        i18n.t("Cost Override"),
+        i18n.t("Hourly Rate"),
+        i18n.t("Cost"),
+        i18n.t("Group"),
+        i18n.t("Phase")
       ];
       const tableData = groupTasks.map(task => {
         const grpObj = groups[task.groupId.value];
@@ -280,7 +281,7 @@ export const exportPDF = state => {
         head: [tableHeader],
         body: tableData,
         styles: { fontSize: 8, cellPadding: 2, font: "DejaVuSans" },
-        headStyles: { fillColor: [79, 129, 189], halign: "center" },
+        headStyles: { fillColor: [79, 129, 189], halign: "center", font: "DejaVuSans" },
         theme: "grid",
         margin: { left: margin, right: margin },
         rowPageBreak: "avoid"

@@ -1,5 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
+import { useTranslation } from "react-i18next";
 
 import { addTaskWithPhaseGroup, clearAllTasks } from "../tasks/actions";
 import TaskStats from "../tasks/TaskStats";
@@ -55,6 +56,7 @@ export const AppContainer = ({
   addTaskWithPhaseGroup,
   clearAllTasks
 }) => {
+  const { t } = useTranslation();
   // Create an ordered list of [taskID, taskObj]
   const orderedTasks = tasksOrder.map(id => [id, tasks[id]]);
 
@@ -102,7 +104,7 @@ export const AppContainer = ({
       return (
         <div key={phaseId} className="border rounded p-3 mb-4">
           <h4>
-            Phase:{" "}
+            {t("Phase")}:{" "}
             {phases[phaseId] && phases[phaseId].name ? phases[phaseId].name : phaseId}
             {phases[phaseId] && phases[phaseId].description && (
               <div className="text-muted small">
@@ -110,7 +112,7 @@ export const AppContainer = ({
               </div>
             )}
             {phases[phaseId] && phases[phaseId].includeInComputation === false && (
-              <span className="text-danger"> (Ignored)</span>
+              <span className="text-danger"> ({t("Ignored")})</span>
             )}
           </h4>
 
@@ -129,7 +131,7 @@ export const AppContainer = ({
             return (
               <div key={groupId} className="border rounded p-2 mb-3">
                 <h5 className="mb-3">
-                  Group:{" "}
+                  {t("Group")}:{" "}
                   {groups[groupId] && groups[groupId].name ? groups[groupId].name : groupId}
                   {groups[groupId] && groups[groupId].description && (
                     <div className="text-muted small">
@@ -137,7 +139,7 @@ export const AppContainer = ({
                     </div>
                   )}
                   {groups[groupId] && groups[groupId].includeInComputation === false && (
-                    <span className="text-danger"> (Ignored)</span>
+                    <span className="text-danger"> ({t("Ignored")})</span>
                   )}
                 </h5>
 
@@ -147,22 +149,22 @@ export const AppContainer = ({
 
                 {/* Group summary row */}
                 <div className="border-top pt-2 mt-2 small text-muted">
-                  <strong>Group Summary:</strong>{" "}
+                  <strong>{t("Group Summary")}:</strong>{" "}
                   <span className="ml-3">
-                    <em>Best Case:</em> {groupSummary.sumBest.toFixed(2)}
+                    <em>{t("Best Case")}:</em> {groupSummary.sumBest.toFixed(2)}
                   </span>
                   <span className="ml-3">
-                    <em>Most Likely:</em> {groupSummary.sumLikely.toFixed(2)}
+                    <em>{t("Most Likely")}:</em> {groupSummary.sumLikely.toFixed(2)}
                   </span>
                   <span className="ml-3">
-                    <em>Worst Case:</em> {groupSummary.sumWorst.toFixed(2)}
+                    <em>{t("Worst Case")}:</em> {groupSummary.sumWorst.toFixed(2)}
                   </span>
                   <span className="ml-3">
-                    <em>Average:</em>{" "}
+                    <em>{t("Estimate")}:</em>{" "}
                     {groupSummary.count > 0 ? (groupSummary.sumEstimate / groupSummary.count).toFixed(2) : "0.00"}
                   </span>
                   <span className="ml-3">
-                    <em>Cost:</em> {groupSummary.sumCost.toFixed(2)}
+                    <em>{t("Cost Override")}:</em> {groupSummary.sumCost.toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -171,22 +173,22 @@ export const AppContainer = ({
 
           {/* Phase summary row */}
           <div className="border-top pt-2 mt-2 small text-muted">
-            <strong>Phase Summary:</strong>{" "}
+            <strong>{t("Phase Summary")}:</strong>{" "}
             <span className="ml-3">
-              <em>Best Case:</em> {phaseSummary.sumBest.toFixed(2)}
+              <em>{t("Best Case")}:</em> {phaseSummary.sumBest.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>Most Likely:</em> {phaseSummary.sumLikely.toFixed(2)}
+              <em>{t("Most Likely")}:</em> {phaseSummary.sumLikely.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>Worst Case:</em> {phaseSummary.sumWorst.toFixed(2)}
+              <em>{t("Worst Case")}:</em> {phaseSummary.sumWorst.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>Average:</em>{" "}
+              <em>{t("Estimate")}:</em>{" "}
               {phaseSummary.count > 0 ? (phaseSummary.sumEstimate / phaseSummary.count).toFixed(2) : "0.00"}
             </span>
             <span className="ml-3">
-              <em>Cost:</em> {phaseSummary.sumCost.toFixed(2)}
+              <em>{t("Cost Override")}:</em> {phaseSummary.sumCost.toFixed(2)}
             </span>
           </div>
         </div>
@@ -216,7 +218,7 @@ export const AppContainer = ({
       return (
         <div key={phaseId} className="border rounded p-3 mb-4">
           <h4>
-            Phase:{" "}
+            {t("Phase")}:{" "}
             {phases[phaseId] && phases[phaseId].name ? phases[phaseId].name : phaseId}
             {phases[phaseId] && phases[phaseId].description && (
               <div className="text-muted small">
@@ -224,7 +226,7 @@ export const AppContainer = ({
               </div>
             )}
             {phases[phaseId] && phases[phaseId].includeInComputation === false && (
-              <span className="text-danger"> (Ignored)</span>
+              <span className="text-danger"> ({t("Ignored")})</span>
             )}
           </h4>
 
@@ -233,22 +235,22 @@ export const AppContainer = ({
           ))}
 
           <div className="border-top pt-2 mt-2 small text-muted">
-            <strong>Phase Summary:</strong>{" "}
+            <strong>{t("Phase Summary")}:</strong>{" "}
             <span className="ml-3">
-              <em>Best Case:</em> {summary.sumBest.toFixed(2)}
+              <em>{t("Best Case")}:</em> {summary.sumBest.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>Most Likely:</em> {summary.sumLikely.toFixed(2)}
+              <em>{t("Most Likely")}:</em> {summary.sumLikely.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>Worst Case:</em> {summary.sumWorst.toFixed(2)}
+              <em>{t("Worst Case")}:</em> {summary.sumWorst.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>Average:</em>{" "}
+              <em>{t("Estimate")}:</em>{" "}
               {summary.count > 0 ? (summary.sumEstimate / summary.count).toFixed(2) : "0.00"}
             </span>
             <span className="ml-3">
-              <em>Cost:</em> {summary.sumCost.toFixed(2)}
+              <em>{t("Cost Override")}:</em> {summary.sumCost.toFixed(2)}
             </span>
           </div>
         </div>
@@ -278,7 +280,7 @@ export const AppContainer = ({
       return (
         <div key={groupId} className="border rounded p-3 mb-4">
           <h4>
-            Group:{" "}
+            {t("Group")}:{" "}
             {groups[groupId] && groups[groupId].name ? groups[groupId].name : groupId}
             {groups[groupId] && groups[groupId].description && (
               <div className="text-muted small">
@@ -286,7 +288,7 @@ export const AppContainer = ({
               </div>
             )}
             {groups[groupId] && groups[groupId].includeInComputation === false && (
-              <span className="text-danger"> (Ignored)</span>
+              <span className="text-danger"> ({t("Ignored")})</span>
             )}
           </h4>
 
@@ -295,22 +297,22 @@ export const AppContainer = ({
           ))}
 
           <div className="border-top pt-2 mt-2 small text-muted">
-            <strong>Group Summary:</strong>{" "}
+            <strong>{t("Group Summary")}:</strong>{" "}
             <span className="ml-3">
-              <em>Best Case:</em> {summary.sumBest.toFixed(2)}
+              <em>{t("Best Case")}:</em> {summary.sumBest.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>Most Likely:</em> {summary.sumLikely.toFixed(2)}
+              <em>{t("Most Likely")}:</em> {summary.sumLikely.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>Worst Case:</em> {summary.sumWorst.toFixed(2)}
+              <em>{t("Worst Case")}:</em> {summary.sumWorst.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>Average:</em>{" "}
+              <em>{t("Estimate")}:</em>{" "}
               {summary.count > 0 ? (summary.sumEstimate / summary.count).toFixed(2) : "0.00"}
             </span>
             <span className="ml-3">
-              <em>Cost:</em> {summary.sumCost.toFixed(2)}
+              <em>{t("Cost Override")}:</em> {summary.sumCost.toFixed(2)}
             </span>
           </div>
         </div>
@@ -341,7 +343,7 @@ export const AppContainer = ({
               className="btn btn-outline-secondary btn-block"
               onClick={handleAddTask}
             >
-              Add New Task
+              {t("Add New Task")}
             </button>
           </div>
           <div className="col-md-2">
@@ -350,7 +352,7 @@ export const AppContainer = ({
               className="btn btn-danger btn-block"
               onClick={clearAllTasks}
             >
-              Clear All
+              {t("Clear All")}
             </button>
           </div>
         </div>

@@ -5,10 +5,11 @@ import { makeGetTask } from "./selectors";
 import {
   calculateEstimate,
   calculateTaskTotalCost,
-  taskRowFields
+  getTaskRowFields
 } from "./templates";
 import TextInput from "../common/TextInput";
 import { MOVE_TASK_DOWN, MOVE_TASK_UP } from "./types";
+import { useTranslation } from "react-i18next";
 
 const TaskRow = ({
   taskID,
@@ -21,6 +22,8 @@ const TaskRow = ({
   duplicateTask,
   dispatch
 }) => {
+  const { t } = useTranslation();
+  const taskRowFields = getTaskRowFields(t);
   // We'll display groupId & phaseId as dropdowns, not from taskRowFields
   const renderFields = Object.keys(taskRowFields).filter(
     field => field !== "groupId" && field !== "phaseId"
@@ -84,7 +87,7 @@ const TaskRow = ({
         <TextInput
           value={estimate}
           validationMessage=""
-          onChange={() => {}}
+          onChange={() => { }}
           placeholder="Estimate"
           disabled
         />
@@ -95,7 +98,7 @@ const TaskRow = ({
         <TextInput
           value={cost}
           validationMessage=""
-          onChange={() => {}}
+          onChange={() => { }}
           placeholder="Cost"
           disabled
         />

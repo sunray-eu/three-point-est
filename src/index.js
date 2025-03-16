@@ -1,3 +1,4 @@
+import "./i18n";
 import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
@@ -12,7 +13,7 @@ ReactDOM.render(
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
       <React.Fragment>
-        <Navbar title="Three Point Estimation App" />
+        <Navbar />
         <AppContainer />
       </React.Fragment>
     </PersistGate>
