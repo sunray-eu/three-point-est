@@ -5,13 +5,16 @@
   "private": true,
   "dependencies": {
     "gh-pages": "^1.2.0",
+    "jspdf": "^3.0.0",
+    "jspdf-autotable": "^5.0.2",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
     "react-redux": "^5.0.7",
     "react-scripts": "1.1.4",
     "redux": "^4.0.0",
     "redux-persist": "^5.10.0",
-    "reselect": "^3.0.1"
+    "reselect": "^3.0.1",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -24,5 +27,6 @@
   "devDependencies": {
     "eslint-config-google": "^0.9.1",
     "react-testing-library": "^5.2.1"
-  }
+  },
+  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
 }

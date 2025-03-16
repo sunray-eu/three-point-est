@@ -1,56 +1,164 @@
 import React from "react";
 import { connect } from "react-redux";
-
-import { editTaskValue, removeTask } from "./actions";
+import { editTaskValue, removeTask, duplicateTask } from "./actions";
 import { makeGetTask } from "./selectors";
-import { calculateEstimate, taskRowFields } from "./templates";
+import {
+  calculateEstimate,
+  calculateTaskTotalCost,
+  taskRowFields
+} from "./templates";
 import TextInput from "../common/TextInput";
+import { MOVE_TASK_DOWN, MOVE_TASK_UP } from "./types";
 
-const TaskRow = ({ task, editTask, removeTask }) => (
-  <div className="form-row">
-    {Object.keys(task).map(field => (
-      <div key={field} className={"col-md-" + taskRowFields[field].size}>
+const TaskRow = ({
+  taskID,
+  task,
+  groups,
+  phases,
+  config,
+  editTask,
+  removeTask,
+  duplicateTask,
+  dispatch
+}) => {
+  // We'll display groupId & phaseId as dropdowns, not from taskRowFields
+  const renderFields = Object.keys(taskRowFields).filter(
+    field => field !== "groupId" && field !== "phaseId"
+  );
+
+  const moveUp = () => dispatch({ type: MOVE_TASK_UP, id: taskID });
+  const moveDown = () => dispatch({ type: MOVE_TASK_DOWN, id: taskID });
+
+  const estimate = calculateEstimate(task).toFixed(2);
+  const cost = calculateTaskTotalCost(task, groups, phases, config.globalCost).toFixed(2);
+
+  return (
+    <div className="form-row align-items-center mb-2 border-bottom pb-2">
+      {renderFields.map(field => (
+        <div key={field} className={"col-md-" + taskRowFields[field].size}>
+          <TextInput
+            value={task[field].value}
+            validationMessage={task[field].validationMessage}
+            onChange={e => editTask(field, e.target.value)}
+            placeholder={taskRowFields[field].placeholder}
+            disabled={taskRowFields[field].disabled}
+            type={taskRowFields[field].type}
+          />
+        </div>
+      ))}
+
+      {/* Group dropdown */}
+      <div className="col-md-1">
+        <select
+          className="form-control form-control-sm"
+          value={task.groupId.value}
+          onChange={e => editTask("groupId", e.target.value)}
+        >
+          {Object.keys(groups)
+            .filter(gid => groups[gid].phaseId === task.phaseId.value)
+            .map(gid => (
+              <option key={gid} value={gid}>
+                {groups[gid].name}
+              </option>
+            ))}
+        </select>
+      </div>
+
+      {/* Phase dropdown */}
+      <div className="col-md-1">
+        <select
+          className="form-control form-control-sm"
+          value={task.phaseId.value}
+          onChange={e => editTask("phaseId", e.target.value)}
+        >
+          {Object.keys(phases).map(pid => (
+            <option key={pid} value={pid}>
+              {phases[pid].name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Estimate */}
+      <div className="col-md-1">
         <TextInput
-          value={task[field].value}
-          validationMessage={task[field].validationMessage}
-          onChange={e => editTask(field, e.target.value)}
-          placeholder={taskRowFields[field].placeholder}
-          disabled={taskRowFields[field].disabled}
-          type={taskRowFields[field].type}
+          value={estimate}
+          validationMessage=""
+          onChange={() => {}}
+          placeholder="Estimate"
+          disabled
         />
       </div>
-    ))}
-    <div className="col-md-1">
-      <TextInput
-        value={calculateEstimate(task).toFixed(2)}
-        validationMessage=""
-        onChange={e => {}}
-        placeholder={"Estimate"}
-        disabled
-      />
+
+      {/* Cost */}
+      <div className="col-md-1">
+        <TextInput
+          value={cost}
+          validationMessage=""
+          onChange={() => {}}
+          placeholder="Cost"
+          disabled
+        />
+      </div>
+
+      {/* Reorder, Duplicate + Delete */}
+      <div className="col-md-1 d-flex flex-column">
+        <div className="mb-1">
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-secondary mr-1"
+            onClick={moveUp}
+            title="Move task up"
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-secondary"
+            onClick={moveDown}
+            title="Move task down"
+          >
+            ↓
+          </button>
+        </div>
+        <div>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-info mr-1"
+            onClick={() => duplicateTask(taskID)}
+            title="Duplicate Task"
+          >
+            Duplicate
+          </button>
+          <button
+            type="button"
+            className="btn btn-danger btn-sm"
+            onClick={removeTask}
+            title="Remove task"
+          >
+            &times;
+          </button>
+        </div>
+      </div>
     </div>
-    <button
-      type="button"
-      className="btn btn-danger btn-sm"
-      onClick={removeTask}
-    >
-      &times;
-    </button>
-  </div>
-);
+  );
+};
 
 const makeMapStateToProps = () => {
   const getTask = makeGetTask();
-  const mapStateToProps = (state, props) => ({
-    task: getTask(state, props)
+  return (state, props) => ({
+    task: getTask(state, props),
+    groups: state.groups.groups,
+    phases: state.phases.phases,
+    config: state.config
   });
-
-  return mapStateToProps;
 };
 
 const mapDispatchToProps = (dispatch, props) => ({
   editTask: (key, value) => dispatch(editTaskValue(props.taskID, key, value)),
-  removeTask: () => dispatch(removeTask(props.taskID))
+  removeTask: () => dispatch(removeTask(props.taskID)),
+  duplicateTask: id => dispatch(duplicateTask(id)),
+  dispatch
 });
 
 export default connect(

@@ -1,7 +1,7 @@
 import React from "react";
 import { createStore } from "redux";
 import { Provider } from "react-redux";
-import { render, fireEvent, cleanup } from "react-testing-library";
+import { render, fireEvent, cleanup } from "@testing-library/react";
 
 import AppContainer from "./AppContainer";
 import reducer from "../reducers";
@@ -19,14 +19,14 @@ function renderWithRedux(
 afterEach(cleanup);
 
 test("renders initial task and allows a new task to be added", () => {
-  const { getByText, getByValue } = renderWithRedux(<AppContainer />);
+  const { getByText, getByDisplayValue } = renderWithRedux(<AppContainer />);
 
   // check if initially, one task is there
-  expect(getByValue("Task 1")).toBeDefined;
+  expect(getByDisplayValue("Task 1")).toBeDefined();
 
   // allow another task to be added
   fireEvent.click(getByText("Add New Task"));
-  expect(getByValue("Task 2")).toBeDefined;
+  expect(getByDisplayValue("Task 2")).toBeDefined();
 });
 
 test("check calculations for a single task", () => {
@@ -42,7 +42,7 @@ test("check calculations for a single task", () => {
     target: { value: "20" }
   });
 
-  // check if initially, one task is there
+  // check if the Estimate input displays correct value
   expect(getByPlaceholderText("Estimate").value).toBe("15.00");
 });
 
@@ -79,7 +79,20 @@ test("check sums are correct", () => {
     });
   });
 
-  // check total tasks and total estimate are correct
-  expect(getByTestId("Total Tasks").innerText, "3");
-  expect(getByTestId("Total Estimate").innerText, "45.00");
+  // check total tasks and total estimate
+  expect(getByTestId("Total Tasks").innerText).toBe("3");
+  expect(getByTestId("Total Estimate").innerText).toBe("45.00");
+});
+
+test("duplicate task button duplicates a task", () => {
+  const { getByText, getByDisplayValue, getAllByText } = renderWithRedux(<AppContainer />);
+
+  // Initially one task with name "Task 1"
+  expect(getByDisplayValue("Task 1")).toBeDefined();
+
+  // Find and click the duplicate button (it has the text "Duplicate")
+  fireEvent.click(getByText("Duplicate"));
+
+  // The duplicate should have a name prefixed with "Copy of"
+  expect(getByDisplayValue("Copy of Task 1")).toBeDefined();
 });

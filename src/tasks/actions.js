@@ -1,8 +1,10 @@
 import * as types from "./types";
 
-export function addTask() {
+export function addTaskWithPhaseGroup(phaseId, groupId) {
   return {
-    type: types.ADD_TASK
+    type: types.ADD_TASK_WITH_PHASE_GROUP,
+    phaseId,
+    groupId
   };
 }
 
@@ -19,6 +21,13 @@ export function editTaskValue(id, key, value) {
     id,
     key,
     value
+  };
+}
+
+export function duplicateTask(id) {
+  return {
+    type: types.DUPLICATE_TASK,
+    id
   };
 }
 
