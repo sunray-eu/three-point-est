@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { exportJSON } from "../exporters/jsonExporter";
 import { exportExcel } from "../exporters/excelExporter";
 import { exportPDF } from "../exporters/pdfExporter";
+import { encodeStateToUrl } from "../utils/stateUrl";
 
 // Use unified LOAD_STATE action type from tasks
 import { LOAD_STATE } from "../tasks/types";
@@ -29,6 +30,7 @@ import {
 
 const Controls = ({ state, dispatch }) => {
   const { t } = useTranslation();
+  const [copied, setCopied] = useState(false);
 
   const handleSave = () => {
     exportJSON(state);
@@ -130,6 +132,35 @@ const Controls = ({ state, dispatch }) => {
   const { groups, groupsOrder } = state.groups;
   const { phases, phasesOrder } = state.phases;
 
+  const currentUrl = window.location.origin + window.location.pathname;
+
+  const copyToClipboard = (shareUrl) => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Auto-hide notification after 2 sec
+    }).catch(err => {
+      console.error("Failed to copy:", err);
+    });
+  };
+
+  const handleGenerateShareLink = () => {
+    const encoded = encodeStateToUrl(state);
+    const shareUrl = `${currentUrl}?sharedState=${encoded}`;
+    copyToClipboard(shareUrl);
+  };
+
+  const handleGenerateShareLinkPDF = () => {
+    const encoded = encodeStateToUrl(state);
+    const shareUrl = `${currentUrl}?sharedState=${encoded}&download=pdf`;
+    copyToClipboard(shareUrl);
+  };
+
+  const handleGenerateShareLinkExcel = () => {
+    const encoded = encodeStateToUrl(state);
+    const shareUrl = `${currentUrl}?sharedState=${encoded}&download=excel`;
+    copyToClipboard(shareUrl);
+  };
+
   return (
     <div>
       {/* Save/Load/Export Row */}
@@ -165,6 +196,72 @@ const Controls = ({ state, dispatch }) => {
           </button>
         </div>
       </div>
+
+      {/* Share Link Row */}
+      <div>
+      {/* Toast Notification */}
+      <div className={`copy-toast ${copied ? "show" : ""}`}>
+        {t("Link copied to clipboard!")}
+      </div>
+
+      {/* Share Link Row */}
+      <div className="form-row">
+        <div className="col-md-4 mb-2">
+          <button
+            type="button"
+            className="btn btn-outline-info btn-block"
+            onClick={handleGenerateShareLink}
+          >
+            {t("Generate Share Link")}
+          </button>
+        </div>
+        <div className="col-md-4 mb-2">
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-block"
+            onClick={handleGenerateShareLinkPDF}
+          >
+            {t("Share Link with PDF Download")}
+          </button>
+        </div>
+        <div className="col-md-4 mb-2">
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-block"
+            onClick={handleGenerateShareLinkExcel}
+          >
+            {t("Share Link with Excel Download")}
+          </button>
+        </div>
+      </div>
+
+      {/* Styles for toast notification */}
+      <style>
+        {`
+          .copy-toast {
+            position: fixed;
+            z-index: 1000;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(40, 167, 69, 0.95);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
+            font-size: 14px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+          }
+          
+          .copy-toast.show {
+            opacity: 1;
+            visibility: visible;
+          }
+        `}
+      </style>
+    </div>
 
       {/* Toggles */}
       <div className="form-row mb-3">

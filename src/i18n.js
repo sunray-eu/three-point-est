@@ -47,7 +47,13 @@ const resources = {
       "Copy of": "Copy of",
       "Task": "Task",
       "Include": "Include",
-      "Remove": "Remove"
+      "Remove": "Remove",
+      "Generate Share Link": "Generate Share Link",
+      "Share Link with PDF Download": "Share Link with PDF Download",
+      "Share Link with Excel Download": "Share Link with Excel Download",
+      "Share Link:": "Share Link:",
+      "Share Link (PDF):": "Share Link (PDF):",
+      "Share Link (Excel):": "Share Link (Excel):",
     }
   },
   sk: {
@@ -96,7 +102,13 @@ const resources = {
       "Task": "Úloha",
       "Include": "Zahrnúť",
       "Remove": "Odstrániť",
-      "Cost": "Cena"
+      "Cost": "Cena",
+      "Generate Share Link": "Vytvoriť zdieľací odkaz",
+      "Share Link with PDF Download": "Zdieľací odkaz s PDF sťahovaním",
+      "Share Link with Excel Download": "Zdieľací odkaz s Excel sťahovaním",
+      "Share Link:": "Zdieľací odkaz:",
+      "Share Link (PDF):": "Zdieľací odkaz (PDF):",
+      "Share Link (Excel):": "Zdieľací odkaz (Excel):",
     }
   }
 };
