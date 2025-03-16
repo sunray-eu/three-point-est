@@ -8,6 +8,7 @@ import TaskHeadings from "../tasks/TaskHeadings";
 import TaskRow from "../tasks/TaskRow";
 import Controls from "./Controls";
 import { calculateTaskTotalCost } from "../tasks/templates";
+import { mapStateToProps } from "../utils/common";
 
 /**
  * Summation helper: returns cumulative bestCase, mostLikely, worstCase, cost, average estimate and count.
@@ -360,16 +361,6 @@ export const AppContainer = ({
     </div>
   );
 };
-
-const mapStateToProps = state => ({
-  tasks: state.tasks.tasks,
-  tasksOrder: state.tasks.tasksOrder,
-  config: state.config,
-  groups: state.groups.groups,
-  groupsOrder: state.groups.groupsOrder,
-  phases: state.phases.phases,
-  phasesOrder: state.phases.phasesOrder
-});
 
 const mapDispatchToProps = dispatch => ({
   addTaskWithPhaseGroup: (phaseId, groupId) =>
