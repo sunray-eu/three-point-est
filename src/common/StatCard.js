@@ -1,7 +1,7 @@
 import React from "react";
 
 const StatCard = ({ stat, title }) => (
-  <div className="col-sm-4">
+  <div className="col-sm-4 mb-3">
     <div className="card text-right">
       <div className="card-body">
         <h1 data-testid={title} className="display-4">
