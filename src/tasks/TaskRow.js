@@ -104,12 +104,12 @@ const TaskRow = ({
 
       {/* Estimate */}
       <div className="col-md-1">
-        <TextInput value={estimate} validationMessage="" onChange={() => {}} placeholder="Estimate" disabled />
+        <TextInput value={estimate} validationMessage="" onChange={() => {}} placeholder={t("Estimate")} disabled />
       </div>
 
       {/* Cost */}
       <div className="col-md-1">
-        <TextInput value={cost} validationMessage="" onChange={() => {}} placeholder="Cost" disabled />
+        <TextInput value={cost} validationMessage="" onChange={() => {}} placeholder={t("Cost")} disabled />
       </div>
 
       {/* Reorder, Duplicate & Delete */}
@@ -119,7 +119,7 @@ const TaskRow = ({
             type="button"
             className="btn btn-sm btn-outline-secondary mr-1"
             onClick={moveUp}
-            title="Move task up"
+            title={t("Move task up")}
           >
             ↑
           </button>
@@ -127,7 +127,7 @@ const TaskRow = ({
             type="button"
             className="btn btn-sm btn-outline-secondary"
             onClick={moveDown}
-            title="Move task down"
+            title={t("Move task down")}
           >
             ↓
           </button>
@@ -137,15 +137,15 @@ const TaskRow = ({
             type="button"
             className="btn btn-sm btn-outline-info mr-1"
             onClick={() => duplicateTask(taskID)}
-            title="Duplicate Task"
+            title={t("Duplicate Task")}
           >
-            Duplicate
+            {t("Duplicate")}
           </button>
           <button
             type="button"
             className="btn btn-danger btn-sm"
             onClick={removeTask}
-            title="Remove task"
+            title={t("Remove task")}
           >
             &times;
           </button>
