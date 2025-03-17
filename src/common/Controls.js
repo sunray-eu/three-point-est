@@ -369,7 +369,7 @@ const Controls = ({ state, dispatch }) => {
                     onChange={e =>
                       handleGroupCostChange(group.id, e.target.value)
                     }
-                    placeholder={t("Cost Override")}
+                    placeholder={t("Rate Override")}
                   />
                 </div>
                 <div className="col-md-1 text-center">
@@ -468,7 +468,7 @@ const Controls = ({ state, dispatch }) => {
                     onChange={e =>
                       handlePhaseCostChange(phase.id, e.target.value)
                     }
-                    placeholder={t("Cost Override")}
+                    placeholder={t("Rate Override")}
                   />
                 </div>
                 <div className="col-md-1 text-center">

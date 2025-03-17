@@ -25,6 +25,7 @@ function calcSummary(taskIds, tasks, groups, phases, globalCost) {
   taskIds.forEach(tid => {
     const t = tasks[tid];
     // Check if group or phase is ignored in computation:
+    if (!t.groupId || !t.groupId.value) return;
     const group = groups[t.groupId.value];
     const phase = phases[t.phaseId.value];
     if ((group && group.includeInComputation === false) || (phase && phase.includeInComputation === false)) {
@@ -66,7 +67,7 @@ export const AppContainer = ({
     if (tasksOrder.length > 0) {
       const lastTaskId = tasksOrder[tasksOrder.length - 1];
       const lastTask = tasks[lastTaskId];
-      addTaskWithPhaseGroup(lastTask.phaseId.value, lastTask.groupId.value);
+      addTaskWithPhaseGroup(lastTask.phaseId.value, lastTask.groupId?.value);
     } else {
       addTaskWithPhaseGroup("default", "default");
     }
@@ -79,7 +80,7 @@ export const AppContainer = ({
     const nested = {};
     orderedTasks.forEach(([id, task]) => {
       const phaseId = task.phaseId.value;
-      const groupId = task.groupId.value;
+      const groupId = task.groupId?.value || "No Group";
       if (!nested[phaseId]) nested[phaseId] = {};
       if (!nested[phaseId][groupId]) nested[phaseId][groupId] = [];
       nested[phaseId][groupId].push(id);
@@ -117,7 +118,7 @@ export const AppContainer = ({
             )}
           </h4>
 
-          {groupsOrder.map(groupId => {
+          {[...groupsOrder, "No Group"].map(groupId => {
             const groupTaskIDs = phaseGroups[groupId];
             if (!groupTaskIDs) return null; // no tasks in this group for this phase
 
@@ -152,20 +153,23 @@ export const AppContainer = ({
                 <div className="border-top pt-2 mt-2 small text-muted">
                   <strong>{t("Group Summary")}:</strong>{" "}
                   <span className="ml-3">
-                    <em>{t("Best Case")}:</em> {groupSummary.sumBest.toFixed(2)}
+                    <em>{t("Best Case Sum")}:</em> {groupSummary.sumBest.toFixed(2)}
                   </span>
                   <span className="ml-3">
-                    <em>{t("Most Likely")}:</em> {groupSummary.sumLikely.toFixed(2)}
+                    <em>{t("Most Likely Sum")}:</em> {groupSummary.sumLikely.toFixed(2)}
                   </span>
                   <span className="ml-3">
-                    <em>{t("Worst Case")}:</em> {groupSummary.sumWorst.toFixed(2)}
+                    <em>{t("Worst Case Sum")}:</em> {groupSummary.sumWorst.toFixed(2)}
                   </span>
                   <span className="ml-3">
-                    <em>{t("Estimate")}:</em>{" "}
+                    <em>{t("Estimate Sum")}:</em> {groupSummary.sumEstimate.toFixed(2)}
+                  </span>
+                  <span className="ml-3">
+                    <em>{t("Average Estimate")}:</em>{" "}
                     {groupSummary.count > 0 ? (groupSummary.sumEstimate / groupSummary.count).toFixed(2) : "0.00"}
                   </span>
                   <span className="ml-3">
-                    <em>{t("Cost Override")}:</em> {groupSummary.sumCost.toFixed(2)}
+                    <em>{t("Total Cost")}:</em> {groupSummary.sumCost.toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -176,20 +180,23 @@ export const AppContainer = ({
           <div className="border-top pt-2 mt-2 small text-muted">
             <strong>{t("Phase Summary")}:</strong>{" "}
             <span className="ml-3">
-              <em>{t("Best Case")}:</em> {phaseSummary.sumBest.toFixed(2)}
+              <em>{t("Best Case Sum")}:</em> {phaseSummary.sumBest.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>{t("Most Likely")}:</em> {phaseSummary.sumLikely.toFixed(2)}
+              <em>{t("Most Likely Sum")}:</em> {phaseSummary.sumLikely.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>{t("Worst Case")}:</em> {phaseSummary.sumWorst.toFixed(2)}
+              <em>{t("Worst Case Sum")}:</em> {phaseSummary.sumWorst.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>{t("Estimate")}:</em>{" "}
+              <em>{t("Estimate Sum")}:</em> {phaseSummary.sumEstimate.toFixed(2)}
+            </span>
+            <span className="ml-3">
+              <em>{t("Average Estimate")}:</em>{" "}
               {phaseSummary.count > 0 ? (phaseSummary.sumEstimate / phaseSummary.count).toFixed(2) : "0.00"}
             </span>
             <span className="ml-3">
-              <em>{t("Cost Override")}:</em> {phaseSummary.sumCost.toFixed(2)}
+              <em>{t("Total Cost")}:</em> {phaseSummary.sumCost.toFixed(2)}
             </span>
           </div>
         </div>
@@ -238,20 +245,23 @@ export const AppContainer = ({
           <div className="border-top pt-2 mt-2 small text-muted">
             <strong>{t("Phase Summary")}:</strong>{" "}
             <span className="ml-3">
-              <em>{t("Best Case")}:</em> {summary.sumBest.toFixed(2)}
+              <em>{t("Best Case Sum")}:</em> {summary.sumBest.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>{t("Most Likely")}:</em> {summary.sumLikely.toFixed(2)}
+              <em>{t("Most Likely Sum")}:</em> {summary.sumLikely.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>{t("Worst Case")}:</em> {summary.sumWorst.toFixed(2)}
+              <em>{t("Worst Case Sum")}:</em> {summary.sumWorst.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>{t("Estimate")}:</em>{" "}
+              <em>{t("Estimate Sum")}:</em> {summary.sumEstimate.toFixed(2)}
+            </span>
+            <span className="ml-3">
+              <em>{t("Average Estimate")}:</em>{" "}
               {summary.count > 0 ? (summary.sumEstimate / summary.count).toFixed(2) : "0.00"}
             </span>
             <span className="ml-3">
-              <em>{t("Cost Override")}:</em> {summary.sumCost.toFixed(2)}
+              <em>{t("Total Cost")}:</em> {summary.sumCost.toFixed(2)}
             </span>
           </div>
         </div>
@@ -261,12 +271,12 @@ export const AppContainer = ({
     // Group by group only
     const groupsMap = {};
     orderedTasks.forEach(([id, task]) => {
-      const g = task.groupId.value;
+      const g = task.groupId?.value || "No Group";
       if (!groupsMap[g]) groupsMap[g] = [];
       groupsMap[g].push(id);
     });
 
-    content = groupsOrder.map(groupId => {
+    content = [...groupsOrder, "No Group"].map(groupId => {
       const tIDs = groupsMap[groupId];
       if (!tIDs) return null;
 
@@ -300,20 +310,23 @@ export const AppContainer = ({
           <div className="border-top pt-2 mt-2 small text-muted">
             <strong>{t("Group Summary")}:</strong>{" "}
             <span className="ml-3">
-              <em>{t("Best Case")}:</em> {summary.sumBest.toFixed(2)}
+              <em>{t("Best Case Sum")}:</em> {summary.sumBest.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>{t("Most Likely")}:</em> {summary.sumLikely.toFixed(2)}
+              <em>{t("Most Likely Sum")}:</em> {summary.sumLikely.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>{t("Worst Case")}:</em> {summary.sumWorst.toFixed(2)}
+              <em>{t("Worst Case Sum")}:</em> {summary.sumWorst.toFixed(2)}
             </span>
             <span className="ml-3">
-              <em>{t("Estimate")}:</em>{" "}
+              <em>{t("Estimate Sum")}:</em> {summary.sumWorst.toFixed(2)}
+            </span>
+            <span className="ml-3">
+              <em>{t("Average Estimate")}:</em>{" "}
               {summary.count > 0 ? (summary.sumEstimate / summary.count).toFixed(2) : "0.00"}
             </span>
             <span className="ml-3">
-              <em>{t("Cost Override")}:</em> {summary.sumCost.toFixed(2)}
+              <em>{t("Total Cost")}:</em> {summary.sumCost.toFixed(2)}
             </span>
           </div>
         </div>

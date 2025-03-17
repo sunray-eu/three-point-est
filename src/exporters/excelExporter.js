@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { buildExportData } from "./buildExportData";
 import {
   computeOverallSummary,
@@ -7,123 +7,192 @@ import {
 } from "./summaryCalculator";
 import i18n from "../i18n";
 
-export const exportExcel = state => {
-  // Build Tasks sheet (including Hourly Rate column)
+export const exportExcel = async (state) => {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "Sunray Group";
+  workbook.created = new Date();
+  workbook.views = [{ x: 0, y: 0, width: 20000, height: 10000 }];
+
+  // **TASKS SHEET**
+  const worksheetTasks = workbook.addWorksheet(i18n.t("Tasks"), {
+    properties: { tabColor: { argb: "FF4F81BD" } },
+    views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
+  });
+
   const { header, rows } = buildExportData(state);
-  const tasksData = [header, ...rows];
-  const wsTasks = XLSX.utils.aoa_to_sheet(tasksData);
-  wsTasks["!cols"] = [
-    { wch: 5 },
-    { wch: 15 },
-    { wch: 20 },
-    { wch: 10 },
-    { wch: 12 },
-    { wch: 10 },
-    { wch: 10 },
-    { wch: 12 },
-    { wch: 10 },
-    { wch: 15 },
-    { wch: 20 },
-    { wch: 15 },
-    { wch: 20 }
-  ];
-  // Style header row
-  const range = XLSX.utils.decode_range(wsTasks["!ref"]);
-  for (let C = range.s.c; C <= range.e.c; ++C) {
-    const cellRef = XLSX.utils.encode_cell({ r: 0, c: C });
-    if (wsTasks[cellRef]) {
-      wsTasks[cellRef].s = {
-        font: { bold: true, color: { rgb: "FFFFFF" } },
-        fill: { fgColor: { rgb: "4F81BD" } },
-        alignment: { horizontal: "center", vertical: "center" }
+  worksheetTasks.columns = header.map((h, index) => ({
+    header: h,
+    key: `col${index}`,
+    width: h.length + 5, // Dynamic width
+  }));
+
+  // Apply header styles
+  const headerRow = worksheetTasks.getRow(1);
+  headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
+  headerRow.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FF4F81BD" },
+  };
+  headerRow.alignment = { horizontal: "center", vertical: "middle" };
+  headerRow.border = {
+    bottom: { style: "thick", color: { argb: "FFFFFFFF" } },
+  };
+
+  // Add task data
+  rows.forEach((row) => worksheetTasks.addRow(row));
+
+  // Apply styles to all data rows
+  worksheetTasks.eachRow((row, rowNumber) => {
+    if (rowNumber !== 1) {
+      row.alignment = { vertical: "middle", horizontal: "left" };
+      row.font = { size: 11 };
+      row.border = {
+        bottom: { style: "thin", color: { argb: "FFD9D9D9" } },
       };
     }
-  }
+  });
 
-  // Build Summary sheet
+  // **SUMMARY SHEET**
+  const worksheetSummary = workbook.addWorksheet(i18n.t("Summary"), {
+    properties: { tabColor: { argb: "FF4CAF50" } },
+    views: [{ state: "frozen", xSplit: 0, ySplit: 1 }],
+  });
+
   const overall = computeOverallSummary(state);
   const phaseSummaries = computePhaseSummaries(state);
   const groupSummaries = computeGroupSummaries(state);
 
-  // Overall Summary table (key-value pairs) with Avg Hourly Rate
-  const overallTable = [
-    [i18n.t("Overall Summary")],
-    [i18n.t("Total Tasks"), overall.count],
-    [i18n.t("Total Estimate"), overall.sumEstimate.toFixed(2)],
-    [i18n.t("Total Cost (EUR)"), overall.sumCost.toFixed(2)],
-    [i18n.t("Avg Estimate per Task"), overall.count ? (overall.sumEstimate / overall.count).toFixed(2) : "0.00"],
-    [i18n.t("Avg Hourly Rate"), overall.averageRate]
-  ];
+  const addTable = (worksheet, title, headers, data, startRow) => {
+    worksheet.getCell(`A${startRow}`).value = title;
+    worksheet.getCell(`A${startRow}`).font = { bold: true, size: 14 };
+    worksheet.getCell(`A${startRow}`).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF4CAF50" },
+    };
+    worksheet.getRow(startRow).alignment = { horizontal: "center" };
 
-  // Per Phase Summary table: add new column "Hourly Rate"
-  const phaseHeader = [
-    i18n.t("Phase"),
-    i18n.t("Best Case"),
-    i18n.t("Most Likely"),
-    i18n.t("Worst Case"),
-    i18n.t("Estimate"),
-    i18n.t("Hourly Rate"),
-    i18n.t("Cost Override"),
-    i18n.t("Total Tasks")
-  ];
-  const phaseRows = phaseSummaries.map(item => [
-    item.phaseName,
-    item.sumBest.toFixed(2),
-    item.sumLikely.toFixed(2),
-    item.sumWorst.toFixed(2),
-    item.count ? (item.sumEstimate / item.count).toFixed(2) : "0.00",
-    item.averageRate,
-    item.sumCost.toFixed(2),
-    item.count
-  ]);
-  const phaseTable = [[i18n.t("Per Phase Summary")], phaseHeader, ...phaseRows];
+    const headerRowIndex = startRow + 1;
+    worksheet.addRow(headers);
+    const headerRow = worksheet.getRow(headerRowIndex);
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF388E3C" },
+    };
+    headerRow.alignment = { horizontal: "center", vertical: "middle" };
+    headerRow.border = {
+      bottom: { style: "thick", color: { argb: "FFFFFFFF" } },
+    };
 
-  // Per Group Summary table: add new column "Hourly Rate"
-  const groupHeader = [
-    i18n.t("Group"),
-    i18n.t("Best Case"),
-    i18n.t("Most Likely"),
-    i18n.t("Worst Case"),
-    i18n.t("Estimate"),
-    i18n.t("Hourly Rate"),
-    i18n.t("Cost Override"),
-    i18n.t("Total Tasks")
-  ];
-  const groupRows = groupSummaries.map(item => [
-    item.groupName,
-    item.sumBest.toFixed(2),
-    item.sumLikely.toFixed(2),
-    item.sumWorst.toFixed(2),
-    item.count ? (item.sumEstimate / item.count).toFixed(2) : "0.00",
-    item.averageRate,
-    item.sumCost.toFixed(2),
-    item.count
-  ]);
-  const groupTable = [[i18n.t("Per Group Summary")], groupHeader, ...groupRows];
+    data.forEach((row) => worksheet.addRow(row));
 
-  // Combine summary tables into one sheet with blank rows between
-  const summaryData = [
-    ...overallTable,
-    [],
-    ...phaseTable,
-    [],
-    ...groupTable
-  ];
-  const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-  wsSummary["!cols"] = [
-    { wch: 25 },
-    { wch: 15 },
-    { wch: 15 },
-    { wch: 15 },
-    { wch: 15 },
-    { wch: 15 },
-    { wch: 15 },
-    { wch: 10 }
-  ];
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber > headerRowIndex) {
+        row.alignment = { vertical: "middle", horizontal: "left" };
+        row.font = { size: 11 };
+        row.border = {
+          bottom: { style: "thin", color: { argb: "FFD9D9D9" } },
+        };
+      }
+    });
 
-  // Create workbook and add sheets
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, wsTasks, i18n.t("Tasks"));
-  XLSX.utils.book_append_sheet(wb, wsSummary, i18n.t("Summary"));
-  XLSX.writeFile(wb, "tasks.xlsx", { bookType: "xlsx", cellStyles: true });
+    return startRow + data.length + 3;
+  };
+
+  let rowPosition = 1;
+  rowPosition = addTable(
+    worksheetSummary,
+    i18n.t("Overall Summary"),
+    [i18n.t("Metric"), i18n.t("Value")],
+    [
+      [i18n.t("Total Tasks"), overall.count],
+      [i18n.t("Total Estimate"), overall.sumEstimate.toFixed(2)],
+      [i18n.t("Total Cost"), overall.sumCost.toFixed(2)],
+      [i18n.t("Avg Estimate per Task"), overall.count ? (overall.sumEstimate / overall.count).toFixed(2) : "0.00"],
+      [i18n.t("Avg Hourly Rate"), overall.averageRate],
+    ],
+    rowPosition
+  );
+
+  rowPosition = addTable(
+    worksheetSummary,
+    i18n.t("Per Phase Summary"),
+    [
+      i18n.t("Phase"),
+      i18n.t("Best Case Sum"),
+      i18n.t("Most Likely Sum"),
+      i18n.t("Worst Case Sum"),
+      i18n.t("Estimate Sum"),
+      i18n.t("Average Estimate"),
+      i18n.t("Average Hourly Rate"),
+      i18n.t("Rate Override"),
+      i18n.t("Total Cost"),
+      i18n.t("Total Tasks"),
+    ],
+    phaseSummaries.map((item) => [
+      item.phaseName,
+      item.sumBest.toFixed(2),
+      item.sumLikely.toFixed(2),
+      item.sumWorst.toFixed(2),
+      item.sumEstimate.toFixed(2),
+      item.count ? (item.sumEstimate / item.count).toFixed(2) : "0.00",
+      item.averageRate,
+      item.costOverride,
+      item.sumCost.toFixed(2),
+      item.count,
+    ]),
+    rowPosition
+  );
+
+  addTable(
+    worksheetSummary,
+    i18n.t("Per Group Summary"),
+    [
+      i18n.t("Group"),
+      i18n.t("Best Case Sum"),
+      i18n.t("Most Likely Sum"),
+      i18n.t("Worst Case Sum"),
+      i18n.t("Estimate Sum"),
+      i18n.t("Average Estimate"),
+      i18n.t("Average Hourly Rate"),
+      i18n.t("Rate Override"),
+      i18n.t("Total Cost"),
+      i18n.t("Total Tasks"),
+    ],
+    groupSummaries.map((item) => [
+      item.groupName,
+      item.sumBest.toFixed(2),
+      item.sumLikely.toFixed(2),
+      item.sumWorst.toFixed(2),
+      item.sumEstimate.toFixed(2),
+      item.count ? (item.sumEstimate / item.count).toFixed(2) : "0.00",
+      item.averageRate,
+      item.costOverride,
+      item.sumCost.toFixed(2),
+      item.count,
+    ]),
+    rowPosition
+  );
+
+  worksheetSummary.getColumn(1).width = 25;
+  worksheetSummary.columns.forEach((col, index) => {
+    if (index > 0) col.width = 15;
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "tasks.xlsx";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };

@@ -44,19 +44,20 @@ export default function reducer(state = initialState, action = {}) {
 
     case types.EDIT_TASK_VALUE: {
       const currentValue = state.tasks[action.id][action.key];
-      const currentInputType = inputTypes[currentValue.type];
+      const currentInputType = currentValue && inputTypes[currentValue.type];
       return {
         ...state,
         tasks: {
           ...state.tasks,
           [action.id]: {
             ...state.tasks[action.id],
+            ...(action.key == "phaseId" ? {groupId: undefined}  :{}),
             [action.key]: {
               ...currentValue,
               value: action.value,
-              validationMessage: currentInputType.validation.test(action.value)
+              validationMessage: currentInputType ? (currentInputType.validation.test(action.value)
                 ? ""
-                : currentInputType.errorMessage
+                : currentInputType.errorMessage) : ""
             }
           }
         }

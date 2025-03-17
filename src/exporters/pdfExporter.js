@@ -60,7 +60,8 @@ const computeSummaryData = state => {
     const summary = calcSummary(phaseTasks, groups, phases, globalCost);
     summary.averageRate = summary.sumEstimate > 0 ? (summary.sumCost / summary.sumEstimate).toFixed(2) : "N/A";
     return {
-      name: (phases[phaseId] && phases[phaseId].name) || phaseId,
+      name: phases[phaseId]?.name || phaseId,
+      costOverride: phases[phaseId]?.costOverride,
       ...summary
     };
   });
@@ -72,7 +73,8 @@ const computeSummaryData = state => {
     const summary = calcSummary(groupTasks, groups, phases, globalCost);
     summary.averageRate = summary.sumEstimate > 0 ? (summary.sumCost / summary.sumEstimate).toFixed(2) : "N/A";
     return {
-      name: (groupsData[groupId] && groupsData[groupId].name) || groupId,
+      name: groupsData[groupId]?.name || groupId,
+      costOverride: groupsData[groupId]?.costOverride || "",
       ...summary
     };
   });
@@ -99,7 +101,7 @@ export const exportPDF = state => {
   const overallData = [
     [i18n.t("Total Tasks"), overall.count],
     [i18n.t("Total Estimate"), overall.sumEstimate.toFixed(2)],
-    [i18n.t("Total Cost (EUR)"), overall.sumCost.toFixed(2)],
+    [i18n.t("Total Cost"), overall.sumCost.toFixed(2)],
     [i18n.t("Avg Estimate per Task"), overall.count ? (overall.sumEstimate / overall.count).toFixed(2) : "0.00"],
     [i18n.t("Avg Hourly Rate"), overall.averageRate]
   ];
@@ -117,12 +119,14 @@ export const exportPDF = state => {
   // Per Phase Summary table with extra "Hourly Rate" column
   const phaseTableHeader = [
     i18n.t("Phase"),
-    i18n.t("Best Case"),
-    i18n.t("Most Likely"),
-    i18n.t("Worst Case"),
-    i18n.t("Estimate"),
-    i18n.t("Hourly Rate"),
-    i18n.t("Cost Override"),
+    i18n.t("Best Case Sum"),
+    i18n.t("Most Likely Sum"),
+    i18n.t("Worst Case Sum"),
+    i18n.t("Estimate Sum"),
+    i18n.t("Average Estimate"),
+    i18n.t("Average Hourly Rate"),
+    i18n.t("Rate Override"),
+    i18n.t("Total Cost"),
     i18n.t("Total Tasks")
   ];
   const phaseTableBody = phaseSummaries.map(item => [
@@ -130,8 +134,10 @@ export const exportPDF = state => {
     item.sumBest.toFixed(2),
     item.sumLikely.toFixed(2),
     item.sumWorst.toFixed(2),
+    item.sumEstimate.toFixed(2),
     item.count ? (item.sumEstimate / item.count).toFixed(2) : "0.00",
     item.averageRate,
+    item.costOverride,
     item.sumCost.toFixed(2),
     item.count
   ]);
@@ -148,12 +154,14 @@ export const exportPDF = state => {
   // Per Group Summary table with extra "Hourly Rate" column
   const groupTableHeader = [
     i18n.t("Group"),
-    i18n.t("Best Case"),
-    i18n.t("Most Likely"),
-    i18n.t("Worst Case"),
-    i18n.t("Estimate"),
-    i18n.t("Hourly Rate"),
-    i18n.t("Cost Override"),
+    i18n.t("Best Case Sum"),
+    i18n.t("Most Likely Sum"),
+    i18n.t("Worst Case Sum"),
+    i18n.t("Estimate Sum"),
+    i18n.t("Average Estimate"),
+    i18n.t("Average Hourly Rate"),
+    i18n.t("Rate Override"),
+    i18n.t("Total Cost"),
     i18n.t("Total Tasks")
   ];
   const groupTableBody = groupSummaries.map(item => [
@@ -161,8 +169,10 @@ export const exportPDF = state => {
     item.sumBest.toFixed(2),
     item.sumLikely.toFixed(2),
     item.sumWorst.toFixed(2),
+    item.sumEstimate.toFixed(2),
     item.count ? (item.sumEstimate / item.count).toFixed(2) : "0.00",
     item.averageRate,
+    item.costOverride,
     item.sumCost.toFixed(2),
     item.count
   ]);
@@ -250,11 +260,9 @@ export const exportPDF = state => {
         i18n.t("Most Likely"),
         i18n.t("Worst Case"),
         i18n.t("Estimate"),
-        i18n.t("Cost Override"),
+        i18n.t("Rate Override"),
         i18n.t("Hourly Rate"),
         i18n.t("Cost"),
-        i18n.t("Group"),
-        i18n.t("Phase")
       ];
       const tableData = groupTasks.map(task => {
         const grpObj = groups[task.groupId.value];
@@ -272,8 +280,6 @@ export const exportPDF = state => {
           task.costOverride.value,
           effectiveRate,
           cost,
-          (grpObj && grpObj.name) || task.groupId.value,
-          (phObj && phObj.name) || task.phaseId.value,
         ];
       });
       autoTable(doc, {

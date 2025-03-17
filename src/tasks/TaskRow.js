@@ -35,6 +35,17 @@ const TaskRow = ({
   const estimate = calculateEstimate(task).toFixed(2);
   const cost = calculateTaskTotalCost(task, groups, phases, config.globalCost).toFixed(2);
 
+  const handlePhaseChange = (e) => {
+    const newPhaseId = e.target.value;
+    editTask("phaseId", newPhaseId);
+
+    // Find the first group of the new phase
+    const firstGroupId = Object.keys(groups).find(gid => groups[gid].phaseId === newPhaseId);
+    if (firstGroupId) {
+      editTask("groupId", firstGroupId);
+    }
+  };
+
   return (
     <div className="form-row align-items-center mb-2 border-bottom pb-2">
       {renderFields.map(field => (
@@ -54,9 +65,10 @@ const TaskRow = ({
       <div className="col-md-1">
         <select
           className="form-control form-control-sm"
-          value={task.groupId.value}
+          value={task.groupId && (groups[task.groupId.value]?.phaseId === task.phaseId.value) ? task.groupId.value : undefined}
           onChange={e => editTask("groupId", e.target.value)}
         >
+          <option value="">{t("None Group")}</option>
           {Object.keys(groups)
             .filter(gid => groups[gid].phaseId === task.phaseId.value)
             .map(gid => (
@@ -72,7 +84,7 @@ const TaskRow = ({
         <select
           className="form-control form-control-sm"
           value={task.phaseId.value}
-          onChange={e => editTask("phaseId", e.target.value)}
+          onChange={handlePhaseChange}
         >
           {Object.keys(phases).map(pid => (
             <option key={pid} value={pid}>

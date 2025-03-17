@@ -7,7 +7,7 @@ export const buildExportData = state => {
   const { phases } = state.phases;
   const globalCost = state.config.globalCost;
 
-  // Updated header: new column "Hourly Rate" after "Cost Override"
+  // Updated header: new column "Hourly Rate" after "Rate Override"
   const header = [
     i18n.t("ID"),
     i18n.t("Task Name"),
@@ -16,7 +16,7 @@ export const buildExportData = state => {
     i18n.t("Most Likely"),
     i18n.t("Worst Case"),
     i18n.t("Estimate"),
-    i18n.t("Cost Override"),
+    i18n.t("Rate Override"),
     i18n.t("Hourly Rate"),
     i18n.t("Group"),
     i18n.t("Group Desc"),

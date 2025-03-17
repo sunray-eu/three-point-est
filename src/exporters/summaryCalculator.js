@@ -63,6 +63,7 @@ export const computePhaseSummaries = state => {
     summary.averageRate = summary.sumEstimate > 0 ? (summary.sumCost / summary.sumEstimate).toFixed(2) : "N/A";
     return {
       phaseName: (phases[phaseId] && phases[phaseId].name) || phaseId,
+      costOverride: phases[phaseId]?.costOverride || "",
       ...summary
     };
   });
@@ -80,6 +81,7 @@ export const computeGroupSummaries = state => {
     summary.averageRate = summary.sumEstimate > 0 ? (summary.sumCost / summary.sumEstimate).toFixed(2) : "N/A";
     return {
       groupName: (groups[groupId] && groups[groupId].name) || groupId,
+      costOverride: groups[groupId]?.costOverride || "",
       ...summary
     };
   });

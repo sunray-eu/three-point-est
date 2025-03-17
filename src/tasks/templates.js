@@ -30,13 +30,13 @@ export const taskTemplate = id => ({
 
 // Update headings to include new fields
 export const getTaskRowFields = (t) => ({
-  id: { placeholder: t("ID"), size: "1", disabled: true },
+  // id: { placeholder: t("ID"), size: "1", disabled: true },
   taskName: { placeholder: t("Task Name"), size: "2" },
   taskDesc: { placeholder: t("Description"), size: "2" },
   bestCase: { placeholder: t("Best Case"), size: "1", type: "number" },
   mostLikely: { placeholder: t("Most Likely"), size: "1", type: "number" },
   worstCase: { placeholder: t("Worst Case"), size: "1", type: "number" },
-  costOverride: { placeholder: t("Cost (EUR)"), size: "1", type: "number" },
+  costOverride: { placeholder: t("Hourly Rate"), size: "1", type: "number" },
   groupId: { placeholder: t("Group"), size: "1" },
   phaseId: { placeholder: t("Phase"), size: "1" }
 });
@@ -51,7 +51,7 @@ export const calculateEffectiveCost = (task, groups, phases, globalCost) => {
   if (task.costOverride.value !== "") {
     return parseFloat(task.costOverride.value);
   }
-  const group = groups[task.groupId.value];
+  const group = task.groupId && groups[task.groupId.value];
   if (group && group.costOverride !== "") {
     return parseFloat(group.costOverride);
   }

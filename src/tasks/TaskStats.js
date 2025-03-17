@@ -13,7 +13,7 @@ const TaskStats = ({ taskCount, totalEstimate, totalCost }) => {
     <div className="row">
       <StatCard stat={taskCount} title={t("Total Tasks")} />
       <StatCard stat={totalEstimate.toFixed(2)} title={t("Total Estimate")} />
-      <StatCard stat={totalCost.toFixed(2)} title={t("Total Cost (EUR)")} />
+      <StatCard stat={totalCost.toFixed(2)} title={t("Total Cost")} />
       <StatCard stat={avgEstimate} title={t("Avg Estimate per Task")} />
     </div>
   );
@@ -30,6 +30,8 @@ const mapStateToProps = state => {
   let totalCost = 0.0;
 
   tasks.forEach(task => {
+    if (!task.groupId || !task.groupId.value)
+      return
     const group = groups[task.groupId.value];
     const phase = phases[task.phaseId.value];
     // Skip this task if its group or phase is marked to be ignored
