@@ -1,3 +1,6 @@
+/**
+ * @fileoverview Provides various controls for saving, loading, exporting, sharing, and configuring app settings.
+ */
 import React, { useState } from "react";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -6,41 +9,50 @@ import { exportExcel } from "../exporters/excelExporter";
 import { exportPDF } from "../exporters/pdfExporter";
 import { encodeStateToUrl } from "../utils/stateUrl";
 
-// Use unified LOAD_STATE action type from tasks
 import { LOAD_STATE } from "../tasks/types";
 import {
   SET_GLOBAL_COST,
   TOGGLE_GROUPS,
-  TOGGLE_PHASES
+  TOGGLE_PHASES,
 } from "../config/types";
+// New action types:
+import { SET_PROJECT_NAME, SET_LANGUAGE } from "../config/types";
 import {
   ADD_GROUP,
   EDIT_GROUP,
   MOVE_GROUP_DOWN,
   MOVE_GROUP_UP,
-  REMOVE_GROUP
+  REMOVE_GROUP,
 } from "../groups/types";
 import {
   ADD_PHASE,
   EDIT_PHASE,
   MOVE_PHASE_DOWN,
   MOVE_PHASE_UP,
-  REMOVE_PHASE
+  REMOVE_PHASE,
 } from "../phases/types";
+
+const generateShareLink = (state, downloadType = "") => {
+  const currentUrl = window.location.origin + window.location.pathname;
+  const encoded = encodeStateToUrl(state);
+  const langParam = `lang=${state.config.language}`;
+  const params = `?sharedState=${encoded}&${langParam}${
+    downloadType ? `&download=${downloadType}` : ""
+  }`;
+  return `${currentUrl}${params}`;
+};
 
 const Controls = ({ state, dispatch }) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
-  const handleSave = () => {
-    exportJSON(state);
-  };
+  const handleSave = () => exportJSON(state);
 
-  const handleLoad = event => {
+  const handleLoad = (event) => {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = (e) => {
       try {
         const loadedState = JSON.parse(e.target.result);
         dispatch({ type: LOAD_STATE, state: loadedState });
@@ -52,114 +64,43 @@ const Controls = ({ state, dispatch }) => {
     reader.readAsText(file);
   };
 
-  const handleExportExcel = () => {
-    exportExcel(state);
-  };
-
-  const handleExportPDF = () => {
-    exportPDF(state);
-  };
-
-  // Global cost
-  const handleGlobalCostChange = e => {
+  const handleExportExcel = () => exportExcel(state);
+  const handleExportPDF = () => exportPDF(state);
+  const handleGlobalCostChange = (e) =>
     dispatch({ type: SET_GLOBAL_COST, cost: parseFloat(e.target.value) || 0 });
-  };
 
-  // Group handlers
-  const handleGroupNameChange = (groupId, value) => {
-    dispatch({ type: EDIT_GROUP, id: groupId, updates: { name: value } });
-  };
+  // Group Handlers
+  const handleGroupChange = (groupId, field, value) =>
+    dispatch({ type: EDIT_GROUP, id: groupId, updates: { [field]: value } });
+  const moveGroupUp = (groupId) => dispatch({ type: MOVE_GROUP_UP, id: groupId });
+  const moveGroupDown = (groupId) => dispatch({ type: MOVE_GROUP_DOWN, id: groupId });
 
-  const handleGroupDescChange = (groupId, value) => {
-    dispatch({ type: EDIT_GROUP, id: groupId, updates: { description: value } });
-  };
-
-  const handleGroupCostChange = (groupId, value) => {
-    dispatch({
-      type: EDIT_GROUP,
-      id: groupId,
-      updates: { costOverride: value }
-    });
-  };
-
-  const handleGroupIncludeChange = (groupId, value) => {
-    dispatch({
-      type: EDIT_GROUP,
-      id: groupId,
-      updates: { includeInComputation: value }
-    });
-  };
-
-  const moveGroupUp = groupId => {
-    dispatch({ type: MOVE_GROUP_UP, id: groupId });
-  };
-  const moveGroupDown = groupId => {
-    dispatch({ type: MOVE_GROUP_DOWN, id: groupId });
-  };
-
-  // Phase handlers
-  const handlePhaseNameChange = (phaseId, value) => {
-    dispatch({ type: EDIT_PHASE, id: phaseId, updates: { name: value } });
-  };
-
-  const handlePhaseDescChange = (phaseId, value) => {
-    dispatch({ type: EDIT_PHASE, id: phaseId, updates: { description: value } });
-  };
-
-  const handlePhaseCostChange = (phaseId, value) => {
-    dispatch({
-      type: EDIT_PHASE,
-      id: phaseId,
-      updates: { costOverride: value }
-    });
-  };
-
-  const handlePhaseIncludeChange = (phaseId, value) => {
-    dispatch({
-      type: EDIT_PHASE,
-      id: phaseId,
-      updates: { includeInComputation: value }
-    });
-  };
-
-  const movePhaseUp = phaseId => {
-    dispatch({ type: MOVE_PHASE_UP, id: phaseId });
-  };
-  const movePhaseDown = phaseId => {
-    dispatch({ type: MOVE_PHASE_DOWN, id: phaseId });
-  };
+  // Phase Handlers
+  const handlePhaseChange = (phaseId, field, value) =>
+    dispatch({ type: EDIT_PHASE, id: phaseId, updates: { [field]: value } });
+  const movePhaseUp = (phaseId) => dispatch({ type: MOVE_PHASE_UP, id: phaseId });
+  const movePhaseDown = (phaseId) => dispatch({ type: MOVE_PHASE_DOWN, id: phaseId });
 
   const { groups, groupsOrder } = state.groups;
   const { phases, phasesOrder } = state.phases;
 
-  const currentUrl = window.location.origin + window.location.pathname;
-
   const copyToClipboard = (shareUrl) => {
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // Auto-hide notification after 2 sec
-    }).catch(err => {
-      console.error("Failed to copy:", err);
-    });
+    navigator.clipboard
+      .writeText(shareUrl)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy:", err);
+      });
   };
 
-  const handleGenerateShareLink = () => {
-    const encoded = encodeStateToUrl(state);
-    const shareUrl = `${currentUrl}?sharedState=${encoded}`;
-    copyToClipboard(shareUrl);
-  };
-
-  const handleGenerateShareLinkPDF = () => {
-    const encoded = encodeStateToUrl(state);
-    const shareUrl = `${currentUrl}?sharedState=${encoded}&download=pdf`;
-    copyToClipboard(shareUrl);
-  };
-
-  const handleGenerateShareLinkExcel = () => {
-    const encoded = encodeStateToUrl(state);
-    const shareUrl = `${currentUrl}?sharedState=${encoded}&download=excel`;
-    copyToClipboard(shareUrl);
-  };
+  const handleGenerateShareLink = () => copyToClipboard(generateShareLink(state));
+  const handleGenerateShareLinkPDF = () =>
+    copyToClipboard(generateShareLink(state, "pdf"));
+  const handleGenerateShareLinkExcel = () =>
+    copyToClipboard(generateShareLink(state, "excel"));
 
   return (
     <div>
@@ -199,69 +140,84 @@ const Controls = ({ state, dispatch }) => {
 
       {/* Share Link Row */}
       <div>
-      {/* Toast Notification */}
-      <div className={`copy-toast ${copied ? "show" : ""}`}>
-        {t("Link copied to clipboard!")}
+        <div className={`copy-toast ${copied ? "show" : ""}`}>
+          {t("Link copied to clipboard!")}
+        </div>
+        <div className="form-row">
+          <div className="col-md-4 mb-2">
+            <button
+              type="button"
+              className="btn btn-outline-info btn-block"
+              onClick={handleGenerateShareLink}
+            >
+              {t("Generate Share Link")}
+            </button>
+          </div>
+          <div className="col-md-4 mb-2">
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-block"
+              onClick={handleGenerateShareLinkPDF}
+            >
+              {t("Share Link with PDF Download")}
+            </button>
+          </div>
+          <div className="col-md-4 mb-2">
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-block"
+              onClick={handleGenerateShareLinkExcel}
+            >
+              {t("Share Link with Excel Download")}
+            </button>
+          </div>
+        </div>
+        <style>
+          {`
+            .copy-toast {
+              position: fixed;
+              z-index: 1000;
+              bottom: 20px;
+              left: 50%;
+              transform: translateX(-50%);
+              background: rgba(40, 167, 69, 0.95);
+              color: white;
+              padding: 12px 20px;
+              border-radius: 5px;
+              box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
+              font-size: 14px;
+              opacity: 0;
+              visibility: hidden;
+              transition: opacity 0.4s ease, visibility 0.4s ease;
+            }
+            .copy-toast.show {
+              opacity: 1;
+              visibility: visible;
+            }
+          `}
+        </style>
       </div>
 
-      {/* Share Link Row */}
-      <div className="form-row">
-        <div className="col-md-4 mb-2">
-          <button
-            type="button"
-            className="btn btn-outline-info btn-block"
-            onClick={handleGenerateShareLink}
-          >
-            {t("Generate Share Link")}
-          </button>
-        </div>
-        <div className="col-md-4 mb-2">
-          <button
-            type="button"
-            className="btn btn-outline-secondary btn-block"
-            onClick={handleGenerateShareLinkPDF}
-          >
-            {t("Share Link with PDF Download")}
-          </button>
-        </div>
-        <div className="col-md-4 mb-2">
-          <button
-            type="button"
-            className="btn btn-outline-secondary btn-block"
-            onClick={handleGenerateShareLinkExcel}
-          >
-            {t("Share Link with Excel Download")}
-          </button>
+      {/* Project Settings */}
+      <div className="card mb-3">
+        <div className="card-body">
+          <h5 className="card-title">{t("Project Settings")}</h5>
+          <div className="form-group mb-0">
+            <input
+              type="text"
+              className="form-control"
+              value={state.config.projectName}
+              onChange={(e) =>
+                dispatch({
+                  type: SET_PROJECT_NAME,
+                  projectName: e.target.value,
+                })
+              }
+              placeholder={t("Project Name")}
+            />
+          </div>
         </div>
       </div>
-
-      {/* Styles for toast notification */}
-      <style>
-        {`
-          .copy-toast {
-            position: fixed;
-            z-index: 1000;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(40, 167, 69, 0.95);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 5px;
-            box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
-            font-size: 14px;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.4s ease, visibility 0.4s ease;
-          }
-          
-          .copy-toast.show {
-            opacity: 1;
-            visibility: visible;
-          }
-        `}
-      </style>
-    </div>
 
       {/* Toggles */}
       <div className="form-row mb-3">
@@ -271,7 +227,7 @@ const Controls = ({ state, dispatch }) => {
               type="checkbox"
               className="mr-1"
               checked={state.config.showGroups}
-              onChange={e =>
+              onChange={(e) =>
                 dispatch({ type: TOGGLE_GROUPS, show: e.target.checked })
               }
             />
@@ -284,7 +240,7 @@ const Controls = ({ state, dispatch }) => {
               type="checkbox"
               className="mr-1"
               checked={state.config.showPhases}
-              onChange={e =>
+              onChange={(e) =>
                 dispatch({ type: TOGGLE_PHASES, show: e.target.checked })
               }
             />
@@ -312,7 +268,7 @@ const Controls = ({ state, dispatch }) => {
       <div className="card mb-3">
         <div className="card-body">
           <h5 className="card-title">{t("Group Settings")}</h5>
-          {groupsOrder.map(groupId => {
+          {groupsOrder.map((groupId) => {
             const group = groups[groupId];
             return (
               <div key={group.id} className="form-row align-items-center mb-2">
@@ -321,26 +277,25 @@ const Controls = ({ state, dispatch }) => {
                     type="text"
                     className="form-control"
                     value={group.name}
-                    onChange={e =>
-                      handleGroupNameChange(group.id, e.target.value)
+                    onChange={(e) =>
+                      handleGroupChange(group.id, "name", e.target.value)
                     }
                     placeholder={t("Task Name")}
                   />
                 </div>
-                {/* PHASE selection for this group */}
                 <div className="col-md-2">
                   <select
                     className="form-control"
                     value={group.phaseId}
-                    onChange={e =>
+                    onChange={(e) =>
                       dispatch({
                         type: EDIT_GROUP,
                         id: group.id,
-                        updates: { phaseId: e.target.value }
+                        updates: { phaseId: e.target.value },
                       })
                     }
                   >
-                    {phasesOrder.map(phaseId => {
+                    {phasesOrder.map((phaseId) => {
                       const ph = phases[phaseId];
                       return (
                         <option key={phaseId} value={phaseId}>
@@ -355,8 +310,8 @@ const Controls = ({ state, dispatch }) => {
                     type="text"
                     className="form-control"
                     value={group.description || ""}
-                    onChange={e =>
-                      handleGroupDescChange(group.id, e.target.value)
+                    onChange={(e) =>
+                      handleGroupChange(group.id, "description", e.target.value)
                     }
                     placeholder={t("Task Desc")}
                   />
@@ -366,10 +321,10 @@ const Controls = ({ state, dispatch }) => {
                     type="number"
                     className="form-control"
                     value={group.costOverride}
-                    onChange={e =>
-                      handleGroupCostChange(group.id, e.target.value)
+                    onChange={(e) =>
+                      handleGroupChange(group.id, "costOverride", e.target.value)
                     }
-                    placeholder={t("Cost Override")}
+                    placeholder={t("Rate Override")}
                   />
                 </div>
                 <div className="col-md-1 text-center">
@@ -377,8 +332,8 @@ const Controls = ({ state, dispatch }) => {
                     <input
                       type="checkbox"
                       checked={group.includeInComputation}
-                      onChange={e =>
-                        handleGroupIncludeChange(group.id, e.target.checked)
+                      onChange={(e) =>
+                        handleGroupChange(group.id, "includeInComputation", e.target.checked)
                       }
                     />{" "}
                     {t("Include")}
@@ -434,7 +389,7 @@ const Controls = ({ state, dispatch }) => {
       <div className="card mb-3">
         <div className="card-body">
           <h5 className="card-title">{t("Phase Settings")}</h5>
-          {phasesOrder.map(phaseId => {
+          {phasesOrder.map((phaseId) => {
             const phase = phases[phaseId];
             return (
               <div key={phase.id} className="form-row align-items-center mb-2">
@@ -443,8 +398,8 @@ const Controls = ({ state, dispatch }) => {
                     type="text"
                     className="form-control"
                     value={phase.name}
-                    onChange={e =>
-                      handlePhaseNameChange(phase.id, e.target.value)
+                    onChange={(e) =>
+                      handlePhaseChange(phase.id, "name", e.target.value)
                     }
                     placeholder={t("Task Name")}
                   />
@@ -454,8 +409,8 @@ const Controls = ({ state, dispatch }) => {
                     type="text"
                     className="form-control"
                     value={phase.description || ""}
-                    onChange={e =>
-                      handlePhaseDescChange(phase.id, e.target.value)
+                    onChange={(e) =>
+                      handlePhaseChange(phase.id, "description", e.target.value)
                     }
                     placeholder={t("Task Desc")}
                   />
@@ -465,10 +420,10 @@ const Controls = ({ state, dispatch }) => {
                     type="number"
                     className="form-control"
                     value={phase.costOverride}
-                    onChange={e =>
-                      handlePhaseCostChange(phase.id, e.target.value)
+                    onChange={(e) =>
+                      handlePhaseChange(phase.id, "costOverride", e.target.value)
                     }
-                    placeholder={t("Cost Override")}
+                    placeholder={t("Rate Override")}
                   />
                 </div>
                 <div className="col-md-1 text-center">
@@ -476,8 +431,8 @@ const Controls = ({ state, dispatch }) => {
                     <input
                       type="checkbox"
                       checked={phase.includeInComputation}
-                      onChange={e =>
-                        handlePhaseIncludeChange(phase.id, e.target.checked)
+                      onChange={(e) =>
+                        handlePhaseChange(phase.id, "includeInComputation", e.target.checked)
                       }
                     />{" "}
                     {t("Include")}
@@ -532,5 +487,5 @@ const Controls = ({ state, dispatch }) => {
   );
 };
 
-const mapStateToProps = state => ({ state });
+const mapStateToProps = (state) => ({ state });
 export default connect(mapStateToProps)(Controls);

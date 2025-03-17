@@ -1,3 +1,6 @@
+/**
+ * @fileoverview Combines all reducers.
+ */
 import { combineReducers } from "redux";
 
 import tasks from "./tasks/reducer";
@@ -9,5 +12,5 @@ export default combineReducers({
   tasks,
   config,
   groups,
-  phases
+  phases,
 });

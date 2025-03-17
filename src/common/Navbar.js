@@ -1,28 +1,40 @@
+/**
+ * @fileoverview Navigation bar with branding, GitHub link, and language selector.
+ */
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector, useDispatch } from "react-redux";
+import { SET_LANGUAGE } from "../config/types";
 
 const Navbar = () => {
   const { t, i18n } = useTranslation();
+  const dispatch = useDispatch();
+  const configLanguage = useSelector((state) => state.config.language);
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  // Get available languages from i18n resources
+  const availableLanguages = Object.keys(i18n.options.resources).map((lng) => ({
+    code: lng,
+    nativeName: i18n.options.resources[lng].nativeName,
+  }));
+
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
+    dispatch({ type: SET_LANGUAGE, language: lng });
     setDropdownOpen(false);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    function handleClickOutside(event) {
+    const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
-    }
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [dropdownRef]);
-
-  const currentLanguageLabel = i18n.language === "sk" ? "Slovensky" : "English";
+  }, []);
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-danger fixed-top">
@@ -37,7 +49,7 @@ const Navbar = () => {
         &nbsp; {t("Three Point Estimation App")}
       </a>
       <div className="collapse navbar-collapse justify-content-end">
-        <ul className="navbar-nav">
+        <ul className="navbar-nav align-items-center">
           <li className="nav-item">
             <a
               className="nav-link"
@@ -50,29 +62,29 @@ const Navbar = () => {
           </li>
           <li className="nav-item dropdown" ref={dropdownRef}>
             <button
-              className="btn nav-link dropdown-toggle"
+              className="btn btn-outline-light dropdown-toggle"
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              style={{ background: "none", border: "none", padding: 0 }}
             >
-              {currentLanguageLabel}
+              {
+                availableLanguages.find(
+                  (lng) => lng.code === configLanguage
+                )?.nativeName
+              }
             </button>
             <div
               className={`dropdown-menu dropdown-menu-right ${
                 dropdownOpen ? "show" : ""
               }`}
             >
-              <button
-                className="dropdown-item"
-                onClick={() => changeLanguage("en")}
-              >
-                English
-              </button>
-              <button
-                className="dropdown-item"
-                onClick={() => changeLanguage("sk")}
-              >
-                Slovensky
-              </button>
+              {availableLanguages.map((lng) => (
+                <button
+                  key={lng.code}
+                  className="dropdown-item"
+                  onClick={() => changeLanguage(lng.code)}
+                >
+                  {lng.nativeName}
+                </button>
+              ))}
             </div>
           </li>
         </ul>

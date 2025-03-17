@@ -3,6 +3,7 @@ import { initReactI18next } from "react-i18next";
 
 const resources = {
   en: {
+    nativeName: "English",
     translation: {
       "Three Point Estimation App": "Three Point Estimation App",
       "Add New Task": "Add New Task",
@@ -14,7 +15,7 @@ const resources = {
       "Phase Summary": "Phase Summary",
       "Total Tasks": "Total Tasks",
       "Total Estimate": "Total Estimate",
-      "Total Cost (EUR)": "Total Cost (EUR)",
+      "Total Cost": "Total Cost",
       "Avg Estimate per Task": "Avg Estimate per Task",
       "Save": "Save",
       "Export to Excel": "Export to Excel",
@@ -32,9 +33,15 @@ const resources = {
       "Best Case": "Best Case",
       "Most Likely": "Most Likely",
       "Worst Case": "Worst Case",
+      "Best Case Sum": "Best Case Sum",
+      "Most Likely Sum": "Most Likely Sum",
+      "Worst Case Sum": "Worst Case Sum",
+      "Estimate Sum": "Estimate Sum",
+      "Average Estimate": "Average Estimate",
       "Estimate": "Estimate",
-      "Cost Override": "Cost Override",
+      "Rate Override": "Rate Override",
       "Hourly Rate": "Hourly Rate",
+      "Average Hourly Rate": "Average Hourly Rate",
       "Group Desc": "Group Desc",
       "Phase Desc": "Phase Desc",
       "Tasks": "Tasks",
@@ -54,9 +61,16 @@ const resources = {
       "Share Link:": "Share Link:",
       "Share Link (PDF):": "Share Link (PDF):",
       "Share Link (Excel):": "Share Link (Excel):",
-    }
+      "Description": "Description",
+      "None Group": "None",
+      "Project Settings": "Project Settings",
+      "Project Name": "Project Name",
+      "Link copied to clipboard!": "Link copied to clipboard!",
+      "Project": "Project",
+    },
   },
   sk: {
+    nativeName: "Slovenčina",
     translation: {
       "Three Point Estimation App": "Aplikácia odhadu s tromi bodmi",
       "Add New Task": "Pridať nový úlohu",
@@ -68,8 +82,8 @@ const resources = {
       "Phase Summary": "Zhrnutie fázy",
       "Total Tasks": "Celkový počet úloh",
       "Total Estimate": "Celkový odhad",
-      "Total Cost (EUR)": "Celkové náklady (EUR)",
-      "Avg Estimate per Task": "Priemerný odhad na úlohu",
+      "Total Cost": "Celkové náklady",
+      "Avg Estimate per Task": "Priemerný vážený odhad na úlohu",
       "Save": "Uložiť",
       "Export to Excel": "Exportovať do Excelu",
       "Export to PDF": "Exportovať do PDF",
@@ -84,11 +98,17 @@ const resources = {
       "Task Name": "Názov úlohy",
       "Task Desc": "Popis úlohy",
       "Best Case": "Najlepší prípad",
-      "Most Likely": "Najpravdepodobnejší",
+      "Most Likely": "Realistický prípad",
       "Worst Case": "Najhorší prípad",
-      "Estimate": "Odhad",
-      "Cost Override": "Vlastná h. sadzba",
+      "Best Case Sum": "Najlepší Dokopy",
+      "Most Likely Sum": "Realistický Dokopy",
+      "Worst Case Sum": "Najhorší Dokopy",
+      "Estimate Sum": "Vážený Dokopy",
+      "Average Estimate": "Priemer váženého odhadu",
+      "Estimate": "Vážený odhad",
+      "Rate Override": "Vlastná h. sadzba",
       "Hourly Rate": "Hodinová sadzba",
+      "Average Hourly Rate": "Priemerná hodinová sadzba",
       "Group Desc": "Popis skupiny",
       "Phase Desc": "Popis fázy",
       "Tasks": "Úlohy",
@@ -102,24 +122,27 @@ const resources = {
       "Task": "Úloha",
       "Include": "Zahrnúť",
       "Remove": "Odstrániť",
-      "Cost": "Cena",
       "Generate Share Link": "Vytvoriť zdieľací odkaz",
       "Share Link with PDF Download": "Zdieľací odkaz s PDF sťahovaním",
       "Share Link with Excel Download": "Zdieľací odkaz s Excel sťahovaním",
       "Share Link:": "Zdieľací odkaz:",
       "Share Link (PDF):": "Zdieľací odkaz (PDF):",
       "Share Link (Excel):": "Zdieľací odkaz (Excel):",
-    }
-  }
+      "Description": "Popis",
+      "None Group": "Žiadna",
+      "Project Settings": "Nastavenia projektu",
+      "Project Name": "Názov projektu",
+      "Link copied to clipboard!": "Odkaz bol skopírovaný do schránky!",
+      "Project": "Projekt",
+    },
+  },
 };
 
 i18n.use(initReactI18next).init({
   resources,
   lng: "en", // default language
   fallbackLng: "en",
-  interpolation: {
-    escapeValue: false // React already safeguards from XSS
-  }
+  interpolation: { escapeValue: false },
 });
 
 export default i18n;

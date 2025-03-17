@@ -1,3 +1,6 @@
+/**
+ * @fileoverview Action type constants for groups.
+ */
 export const ADD_GROUP = "groups/ADD_GROUP";
 export const EDIT_GROUP = "groups/EDIT_GROUP";
 export const REMOVE_GROUP = "groups/REMOVE_GROUP";
