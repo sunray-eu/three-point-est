@@ -1,4 +1,8 @@
+/**
+ * @fileoverview A simple card to display a statistic.
+ */
 import React from "react";
+import PropTypes from "prop-types";
 
 const StatCard = ({ stat, title }) => (
   <div className="col-sm-4 mb-3">
@@ -12,5 +16,10 @@ const StatCard = ({ stat, title }) => (
     </div>
   </div>
 );
+
+StatCard.propTypes = {
+  stat: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  title: PropTypes.string.isRequired,
+};
 
 export default StatCard;

@@ -1,13 +1,21 @@
+/**
+ * @fileoverview Builds header and rows for exporting tasks data.
+ */
 import i18n from "../i18n";
 import { calculateEstimate, calculateEffectiveCost } from "../tasks/templates";
 
-export const buildExportData = state => {
+/**
+ * Builds export data for tasks.
+ *
+ * @param {Object} state - The current state.
+ * @returns {Object} Object with header array and rows array.
+ */
+export const buildExportData = (state) => {
   const { tasks } = state.tasks;
   const { groups } = state.groups;
   const { phases } = state.phases;
   const globalCost = state.config.globalCost;
 
-  // Updated header: new column "Hourly Rate" after "Rate Override"
   const header = [
     i18n.t("ID"),
     i18n.t("Task Name"),
@@ -21,10 +29,10 @@ export const buildExportData = state => {
     i18n.t("Group"),
     i18n.t("Group Desc"),
     i18n.t("Phase"),
-    i18n.t("Phase Desc")
+    i18n.t("Phase Desc"),
   ];
 
-  const rows = Object.values(tasks).map(task => {
+  const rows = Object.values(tasks).map((task) => {
     const groupObj = groups[task.groupId.value];
     const phaseObj = phases[task.phaseId.value];
     const effectiveRate = calculateEffectiveCost(task, groups, phases, globalCost).toFixed(2);
@@ -41,7 +49,7 @@ export const buildExportData = state => {
       (groupObj && groupObj.name) || task.groupId.value,
       (groupObj && groupObj.description) || "",
       (phaseObj && phaseObj.name) || task.phaseId.value,
-      (phaseObj && phaseObj.description) || ""
+      (phaseObj && phaseObj.description) || "",
     ];
   });
 

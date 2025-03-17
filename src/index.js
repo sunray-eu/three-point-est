@@ -1,3 +1,6 @@
+/**
+ * @fileoverview Entry point for the Three Point Estimation App.
+ */
 import "./i18n";
 import React from "react";
 import ReactDOM from "react-dom";

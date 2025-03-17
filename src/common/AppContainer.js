@@ -1,4 +1,10 @@
-import React from "react";
+/**
+ * @fileoverview Main container for the Three Point Estimation App.
+ * Renders the task list (optionally grouped by phase and/or group), summary rows and controls.
+ */
+
+import React, { useEffect } from "react";
+import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { useTranslation } from "react-i18next";
 
@@ -11,10 +17,17 @@ import { calculateTaskTotalCost } from "../tasks/templates";
 import { mapStateToProps } from "../utils/common";
 
 /**
- * Summation helper: returns cumulative bestCase, mostLikely, worstCase, cost, average estimate and count.
- * It skips tasks whose group or phase is marked to be ignored in computation.
+ * Calculates cumulative summary values for a list of task IDs.
+ * Skips tasks whose group or phase is marked to be ignored.
+ *
+ * @param {string[]} taskIds - Array of task IDs.
+ * @param {Object} tasks - Tasks keyed by their ID.
+ * @param {Object} groups - Groups keyed by their ID.
+ * @param {Object} phases - Phases keyed by their ID.
+ * @param {number} globalCost - Global hourly cost.
+ * @returns {Object} The summary object.
  */
-function calcSummary(taskIds, tasks, groups, phases, globalCost) {
+export function calcSummary(taskIds, tasks, groups, phases, globalCost) {
   let sumBest = 0;
   let sumLikely = 0;
   let sumWorst = 0;
@@ -22,13 +35,15 @@ function calcSummary(taskIds, tasks, groups, phases, globalCost) {
   let sumEstimate = 0;
   let count = 0;
 
-  taskIds.forEach(tid => {
+  taskIds.forEach((tid) => {
     const t = tasks[tid];
-    // Check if group or phase is ignored in computation:
     if (!t.groupId || !t.groupId.value) return;
     const group = groups[t.groupId.value];
     const phase = phases[t.phaseId.value];
-    if ((group && group.includeInComputation === false) || (phase && phase.includeInComputation === false)) {
+    if (
+      (group && group.includeInComputation === false) ||
+      (phase && phase.includeInComputation === false)
+    ) {
       return;
     }
     const best = parseFloat(t.bestCase.value) || 0;
@@ -37,7 +52,6 @@ function calcSummary(taskIds, tasks, groups, phases, globalCost) {
     sumBest += best;
     sumLikely += likely;
     sumWorst += worst;
-    // Calculate weighted average estimate:
     const estimate = (best + 4 * likely + worst) / 6.0;
     sumEstimate += estimate;
     sumCost += calculateTaskTotalCost(t, groups, phases, globalCost);
@@ -46,6 +60,53 @@ function calcSummary(taskIds, tasks, groups, phases, globalCost) {
 
   return { sumBest, sumLikely, sumWorst, sumCost, sumEstimate, count };
 }
+
+/**
+ * Renders a summary row given a summary object.
+ *
+ * @param {Object} props
+ * @param {Object} props.summary - The summary data.
+ * @param {string} props.label - The label for the summary (e.g. "Group Summary" or "Phase Summary").
+ * @param {function} props.t - The translation function.
+ * @returns {JSX.Element}
+ */
+const SummaryRow = ({ summary, label, t }) => (
+  <div className="border-top pt-2 mt-2 small text-muted">
+    <strong>{t(label)}:</strong>{" "}
+    <span className="ml-3">
+      <em>{t("Best Case Sum")}:</em> {summary.sumBest.toFixed(2)}
+    </span>
+    <span className="ml-3">
+      <em>{t("Most Likely Sum")}:</em> {summary.sumLikely.toFixed(2)}
+    </span>
+    <span className="ml-3">
+      <em>{t("Worst Case Sum")}:</em> {summary.sumWorst.toFixed(2)}
+    </span>
+    <span className="ml-3">
+      <em>{t("Estimate Sum")}:</em> {summary.sumEstimate.toFixed(2)}
+    </span>
+    <span className="ml-3">
+      <em>{t("Average Estimate")}:</em>{" "}
+      {summary.count > 0 ? (summary.sumEstimate / summary.count).toFixed(2) : "0.00"}
+    </span>
+    <span className="ml-3">
+      <em>{t("Total Cost")}:</em> {summary.sumCost.toFixed(2)}
+    </span>
+  </div>
+);
+
+SummaryRow.propTypes = {
+  summary: PropTypes.shape({
+    sumBest: PropTypes.number.isRequired,
+    sumLikely: PropTypes.number.isRequired,
+    sumWorst: PropTypes.number.isRequired,
+    sumEstimate: PropTypes.number.isRequired,
+    sumCost: PropTypes.number.isRequired,
+    count: PropTypes.number.isRequired,
+  }).isRequired,
+  label: PropTypes.string.isRequired,
+  t: PropTypes.func.isRequired,
+};
 
 export const AppContainer = ({
   tasks,
@@ -56,14 +117,16 @@ export const AppContainer = ({
   phases,
   phasesOrder,
   addTaskWithPhaseGroup,
-  clearAllTasks
+  clearAllTasks,
 }) => {
-  const { t } = useTranslation();
-  // Create an ordered list of [taskID, taskObj]
-  const orderedTasks = tasksOrder.map(id => [id, tasks[id]]);
+  const { t, i18n } = useTranslation();
+  const orderedTasks = tasksOrder.map((id) => [id, tasks[id]]);
+
+  useEffect(() => {
+    i18n.changeLanguage(config.language);
+  }, []);
 
   const handleAddTask = () => {
-    // If there are tasks, take phase and group from the last task.
     if (tasksOrder.length > 0) {
       const lastTaskId = tasksOrder[tasksOrder.length - 1];
       const lastTask = tasks[lastTaskId];
@@ -73,132 +136,64 @@ export const AppContainer = ({
     }
   };
 
-  let content;
+  let content = null;
+
   if (config.showPhases && config.showGroups) {
     // Nested grouping: Phase > Group
-    // Build a nested structure { phaseId: { groupId: [taskID, ...], ... }, ... }
     const nested = {};
     orderedTasks.forEach(([id, task]) => {
       const phaseId = task.phaseId.value;
       const groupId = task.groupId?.value || "No Group";
-      if (!nested[phaseId]) nested[phaseId] = {};
-      if (!nested[phaseId][groupId]) nested[phaseId][groupId] = [];
+      nested[phaseId] = nested[phaseId] || {};
+      nested[phaseId][groupId] = nested[phaseId][groupId] || [];
       nested[phaseId][groupId].push(id);
     });
 
-    content = phasesOrder.map(phaseId => {
+    content = phasesOrder.map((phaseId) => {
       const phaseGroups = nested[phaseId];
-      if (!phaseGroups) return null; // no tasks in this phase
-
-      // Gather all tasks in this phase to compute a summary
-      const allPhaseTaskIDs = [];
-      Object.values(phaseGroups).forEach(taskIds => {
-        allPhaseTaskIDs.push(...taskIds);
-      });
-      const phaseSummary = calcSummary(
-        allPhaseTaskIDs,
-        tasks,
-        groups,
-        phases,
-        config.globalCost
-      );
+      if (!phaseGroups) return null;
+      const allPhaseTaskIDs = Object.values(phaseGroups).flat();
+      const phaseSummary = calcSummary(allPhaseTaskIDs, tasks, groups, phases, config.globalCost);
 
       return (
         <div key={phaseId} className="border rounded p-3 mb-4">
           <h4>
-            {t("Phase")}:{" "}
-            {phases[phaseId] && phases[phaseId].name ? phases[phaseId].name : phaseId}
-            {phases[phaseId] && phases[phaseId].description && (
-              <div className="text-muted small">
-                {phases[phaseId].description}
-              </div>
+            {t("Phase")}: {phases[phaseId]?.name || phaseId}
+            {phases[phaseId]?.description && (
+              <div className="text-muted small">{phases[phaseId].description}</div>
             )}
-            {phases[phaseId] && phases[phaseId].includeInComputation === false && (
+            {phases[phaseId]?.includeInComputation === false && (
               <span className="text-danger"> ({t("Ignored")})</span>
             )}
           </h4>
 
-          {[...groupsOrder, "No Group"].map(groupId => {
+          {[...groupsOrder, "No Group"].map((groupId) => {
             const groupTaskIDs = phaseGroups[groupId];
-            if (!groupTaskIDs) return null; // no tasks in this group for this phase
-
-            const groupSummary = calcSummary(
-              groupTaskIDs,
-              tasks,
-              groups,
-              phases,
-              config.globalCost
-            );
+            if (!groupTaskIDs) return null;
+            const groupSummary = calcSummary(groupTaskIDs, tasks, groups, phases, config.globalCost);
 
             return (
               <div key={groupId} className="border rounded p-2 mb-3">
                 <h5 className="mb-3">
-                  {t("Group")}:{" "}
-                  {groups[groupId] && groups[groupId].name ? groups[groupId].name : groupId}
-                  {groups[groupId] && groups[groupId].description && (
-                    <div className="text-muted small">
-                      {groups[groupId].description}
-                    </div>
+                  {t("Group")}: {groups[groupId]?.name || groupId}
+                  {groups[groupId]?.description && (
+                    <div className="text-muted small">{groups[groupId].description}</div>
                   )}
-                  {groups[groupId] && groups[groupId].includeInComputation === false && (
+                  {groups[groupId]?.includeInComputation === false && (
                     <span className="text-danger"> ({t("Ignored")})</span>
                   )}
                 </h5>
 
-                {groupTaskIDs.map(tid => (
+                {groupTaskIDs.map((tid) => (
                   <TaskRow key={tid} taskID={tid} />
                 ))}
 
-                {/* Group summary row */}
-                <div className="border-top pt-2 mt-2 small text-muted">
-                  <strong>{t("Group Summary")}:</strong>{" "}
-                  <span className="ml-3">
-                    <em>{t("Best Case Sum")}:</em> {groupSummary.sumBest.toFixed(2)}
-                  </span>
-                  <span className="ml-3">
-                    <em>{t("Most Likely Sum")}:</em> {groupSummary.sumLikely.toFixed(2)}
-                  </span>
-                  <span className="ml-3">
-                    <em>{t("Worst Case Sum")}:</em> {groupSummary.sumWorst.toFixed(2)}
-                  </span>
-                  <span className="ml-3">
-                    <em>{t("Estimate Sum")}:</em> {groupSummary.sumEstimate.toFixed(2)}
-                  </span>
-                  <span className="ml-3">
-                    <em>{t("Average Estimate")}:</em>{" "}
-                    {groupSummary.count > 0 ? (groupSummary.sumEstimate / groupSummary.count).toFixed(2) : "0.00"}
-                  </span>
-                  <span className="ml-3">
-                    <em>{t("Total Cost")}:</em> {groupSummary.sumCost.toFixed(2)}
-                  </span>
-                </div>
+                <SummaryRow summary={groupSummary} label="Group Summary" t={t} />
               </div>
             );
           })}
 
-          {/* Phase summary row */}
-          <div className="border-top pt-2 mt-2 small text-muted">
-            <strong>{t("Phase Summary")}:</strong>{" "}
-            <span className="ml-3">
-              <em>{t("Best Case Sum")}:</em> {phaseSummary.sumBest.toFixed(2)}
-            </span>
-            <span className="ml-3">
-              <em>{t("Most Likely Sum")}:</em> {phaseSummary.sumLikely.toFixed(2)}
-            </span>
-            <span className="ml-3">
-              <em>{t("Worst Case Sum")}:</em> {phaseSummary.sumWorst.toFixed(2)}
-            </span>
-            <span className="ml-3">
-              <em>{t("Estimate Sum")}:</em> {phaseSummary.sumEstimate.toFixed(2)}
-            </span>
-            <span className="ml-3">
-              <em>{t("Average Estimate")}:</em>{" "}
-              {phaseSummary.count > 0 ? (phaseSummary.sumEstimate / phaseSummary.count).toFixed(2) : "0.00"}
-            </span>
-            <span className="ml-3">
-              <em>{t("Total Cost")}:</em> {phaseSummary.sumCost.toFixed(2)}
-            </span>
-          </div>
+          <SummaryRow summary={phaseSummary} label="Phase Summary" t={t} />
         </div>
       );
     });
@@ -207,63 +202,32 @@ export const AppContainer = ({
     const phasesMap = {};
     orderedTasks.forEach(([id, task]) => {
       const p = task.phaseId.value;
-      if (!phasesMap[p]) phasesMap[p] = [];
+      phasesMap[p] = phasesMap[p] || [];
       phasesMap[p].push(id);
     });
 
-    content = phasesOrder.map(phaseId => {
+    content = phasesOrder.map((phaseId) => {
       const tIDs = phasesMap[phaseId];
       if (!tIDs) return null;
-
-      const summary = calcSummary(
-        tIDs,
-        tasks,
-        groups,
-        phases,
-        config.globalCost
-      );
+      const summary = calcSummary(tIDs, tasks, groups, phases, config.globalCost);
 
       return (
         <div key={phaseId} className="border rounded p-3 mb-4">
           <h4>
-            {t("Phase")}:{" "}
-            {phases[phaseId] && phases[phaseId].name ? phases[phaseId].name : phaseId}
-            {phases[phaseId] && phases[phaseId].description && (
-              <div className="text-muted small">
-                {phases[phaseId].description}
-              </div>
+            {t("Phase")}: {phases[phaseId]?.name || phaseId}
+            {phases[phaseId]?.description && (
+              <div className="text-muted small">{phases[phaseId].description}</div>
             )}
-            {phases[phaseId] && phases[phaseId].includeInComputation === false && (
+            {phases[phaseId]?.includeInComputation === false && (
               <span className="text-danger"> ({t("Ignored")})</span>
             )}
           </h4>
 
-          {tIDs.map(tid => (
+          {tIDs.map((tid) => (
             <TaskRow key={tid} taskID={tid} />
           ))}
 
-          <div className="border-top pt-2 mt-2 small text-muted">
-            <strong>{t("Phase Summary")}:</strong>{" "}
-            <span className="ml-3">
-              <em>{t("Best Case Sum")}:</em> {summary.sumBest.toFixed(2)}
-            </span>
-            <span className="ml-3">
-              <em>{t("Most Likely Sum")}:</em> {summary.sumLikely.toFixed(2)}
-            </span>
-            <span className="ml-3">
-              <em>{t("Worst Case Sum")}:</em> {summary.sumWorst.toFixed(2)}
-            </span>
-            <span className="ml-3">
-              <em>{t("Estimate Sum")}:</em> {summary.sumEstimate.toFixed(2)}
-            </span>
-            <span className="ml-3">
-              <em>{t("Average Estimate")}:</em>{" "}
-              {summary.count > 0 ? (summary.sumEstimate / summary.count).toFixed(2) : "0.00"}
-            </span>
-            <span className="ml-3">
-              <em>{t("Total Cost")}:</em> {summary.sumCost.toFixed(2)}
-            </span>
-          </div>
+          <SummaryRow summary={summary} label="Phase Summary" t={t} />
         </div>
       );
     });
@@ -272,71 +236,38 @@ export const AppContainer = ({
     const groupsMap = {};
     orderedTasks.forEach(([id, task]) => {
       const g = task.groupId?.value || "No Group";
-      if (!groupsMap[g]) groupsMap[g] = [];
+      groupsMap[g] = groupsMap[g] || [];
       groupsMap[g].push(id);
     });
 
-    content = [...groupsOrder, "No Group"].map(groupId => {
+    content = [...groupsOrder, "No Group"].map((groupId) => {
       const tIDs = groupsMap[groupId];
       if (!tIDs) return null;
-
-      const summary = calcSummary(
-        tIDs,
-        tasks,
-        groups,
-        phases,
-        config.globalCost
-      );
+      const summary = calcSummary(tIDs, tasks, groups, phases, config.globalCost);
 
       return (
         <div key={groupId} className="border rounded p-3 mb-4">
           <h4>
-            {t("Group")}:{" "}
-            {groups[groupId] && groups[groupId].name ? groups[groupId].name : groupId}
-            {groups[groupId] && groups[groupId].description && (
-              <div className="text-muted small">
-                {groups[groupId].description}
-              </div>
+            {t("Group")}: {groups[groupId]?.name || groupId}
+            {groups[groupId]?.description && (
+              <div className="text-muted small">{groups[groupId].description}</div>
             )}
-            {groups[groupId] && groups[groupId].includeInComputation === false && (
+            {groups[groupId]?.includeInComputation === false && (
               <span className="text-danger"> ({t("Ignored")})</span>
             )}
           </h4>
 
-          {tIDs.map(tid => (
+          {tIDs.map((tid) => (
             <TaskRow key={tid} taskID={tid} />
           ))}
 
-          <div className="border-top pt-2 mt-2 small text-muted">
-            <strong>{t("Group Summary")}:</strong>{" "}
-            <span className="ml-3">
-              <em>{t("Best Case Sum")}:</em> {summary.sumBest.toFixed(2)}
-            </span>
-            <span className="ml-3">
-              <em>{t("Most Likely Sum")}:</em> {summary.sumLikely.toFixed(2)}
-            </span>
-            <span className="ml-3">
-              <em>{t("Worst Case Sum")}:</em> {summary.sumWorst.toFixed(2)}
-            </span>
-            <span className="ml-3">
-              <em>{t("Estimate Sum")}:</em> {summary.sumWorst.toFixed(2)}
-            </span>
-            <span className="ml-3">
-              <em>{t("Average Estimate")}:</em>{" "}
-              {summary.count > 0 ? (summary.sumEstimate / summary.count).toFixed(2) : "0.00"}
-            </span>
-            <span className="ml-3">
-              <em>{t("Total Cost")}:</em> {summary.sumCost.toFixed(2)}
-            </span>
-          </div>
+          <SummaryRow summary={summary} label="Group Summary" t={t} />
         </div>
       );
     });
   } else {
-    // No grouping => Just list tasks
-    content = orderedTasks.map(([tid]) => (
-      <TaskRow key={tid} taskID={tid} />
-    ));
+    // No grouping – just list tasks
+    content = orderedTasks.map(([tid]) => <TaskRow key={tid} taskID={tid} />);
   }
 
   return (
@@ -375,13 +306,22 @@ export const AppContainer = ({
   );
 };
 
-const mapDispatchToProps = dispatch => ({
+AppContainer.propTypes = {
+  tasks: PropTypes.object.isRequired,
+  tasksOrder: PropTypes.array.isRequired,
+  config: PropTypes.object.isRequired,
+  groups: PropTypes.object.isRequired,
+  groupsOrder: PropTypes.array.isRequired,
+  phases: PropTypes.object.isRequired,
+  phasesOrder: PropTypes.array.isRequired,
+  addTaskWithPhaseGroup: PropTypes.func.isRequired,
+  clearAllTasks: PropTypes.func.isRequired,
+};
+
+const mapDispatchToProps = (dispatch) => ({
   addTaskWithPhaseGroup: (phaseId, groupId) =>
     dispatch(addTaskWithPhaseGroup(phaseId, groupId)),
-  clearAllTasks: () => dispatch(clearAllTasks())
+  clearAllTasks: () => dispatch(clearAllTasks()),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(AppContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(AppContainer);

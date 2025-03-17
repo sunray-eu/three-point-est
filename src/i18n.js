@@ -3,6 +3,7 @@ import { initReactI18next } from "react-i18next";
 
 const resources = {
   en: {
+    nativeName: "English",
     translation: {
       "Three Point Estimation App": "Three Point Estimation App",
       "Add New Task": "Add New Task",
@@ -61,10 +62,15 @@ const resources = {
       "Share Link (PDF):": "Share Link (PDF):",
       "Share Link (Excel):": "Share Link (Excel):",
       "Description": "Description",
-      "None Group": "None"
-    }
+      "None Group": "None",
+      "Project Settings": "Project Settings",
+      "Project Name": "Project Name",
+      "Link copied to clipboard!": "Link copied to clipboard!",
+      "Project": "Project",
+    },
   },
   sk: {
+    nativeName: "Slovenčina",
     translation: {
       "Three Point Estimation App": "Aplikácia odhadu s tromi bodmi",
       "Add New Task": "Pridať nový úlohu",
@@ -116,7 +122,6 @@ const resources = {
       "Task": "Úloha",
       "Include": "Zahrnúť",
       "Remove": "Odstrániť",
-      "Cost": "Cena",
       "Generate Share Link": "Vytvoriť zdieľací odkaz",
       "Share Link with PDF Download": "Zdieľací odkaz s PDF sťahovaním",
       "Share Link with Excel Download": "Zdieľací odkaz s Excel sťahovaním",
@@ -124,18 +129,20 @@ const resources = {
       "Share Link (PDF):": "Zdieľací odkaz (PDF):",
       "Share Link (Excel):": "Zdieľací odkaz (Excel):",
       "Description": "Popis",
-      "None Group": "Žiadna"
-    }
-  }
+      "None Group": "Žiadna",
+      "Project Settings": "Nastavenia projektu",
+      "Project Name": "Názov projektu",
+      "Link copied to clipboard!": "Odkaz bol skopírovaný do schránky!",
+      "Project": "Projekt",
+    },
+  },
 };
 
 i18n.use(initReactI18next).init({
   resources,
   lng: "en", // default language
   fallbackLng: "en",
-  interpolation: {
-    escapeValue: false // React already safeguards from XSS
-  }
+  interpolation: { escapeValue: false },
 });
 
 export default i18n;

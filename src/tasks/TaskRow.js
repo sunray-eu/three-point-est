@@ -1,11 +1,15 @@
+/**
+ * @fileoverview Renders a single task row with editable fields, dropdowns, and action buttons.
+ */
 import React from "react";
+import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { editTaskValue, removeTask, duplicateTask } from "./actions";
 import { makeGetTask } from "./selectors";
 import {
   calculateEstimate,
   calculateTaskTotalCost,
-  getTaskRowFields
+  getTaskRowFields,
 } from "./templates";
 import TextInput from "../common/TextInput";
 import { MOVE_TASK_DOWN, MOVE_TASK_UP } from "./types";
@@ -20,13 +24,12 @@ const TaskRow = ({
   editTask,
   removeTask,
   duplicateTask,
-  dispatch
+  dispatch,
 }) => {
   const { t } = useTranslation();
   const taskRowFields = getTaskRowFields(t);
-  // We'll display groupId & phaseId as dropdowns, not from taskRowFields
   const renderFields = Object.keys(taskRowFields).filter(
-    field => field !== "groupId" && field !== "phaseId"
+    (field) => field !== "groupId" && field !== "phaseId"
   );
 
   const moveUp = () => dispatch({ type: MOVE_TASK_UP, id: taskID });
@@ -35,12 +38,17 @@ const TaskRow = ({
   const estimate = calculateEstimate(task).toFixed(2);
   const cost = calculateTaskTotalCost(task, groups, phases, config.globalCost).toFixed(2);
 
+  /**
+   * Handles phase change and auto-selects the first available group for that phase.
+   *
+   * @param {Object} e - Event object.
+   */
   const handlePhaseChange = (e) => {
     const newPhaseId = e.target.value;
     editTask("phaseId", newPhaseId);
-
-    // Find the first group of the new phase
-    const firstGroupId = Object.keys(groups).find(gid => groups[gid].phaseId === newPhaseId);
+    const firstGroupId = Object.keys(groups).find(
+      (gid) => groups[gid].phaseId === newPhaseId
+    );
     if (firstGroupId) {
       editTask("groupId", firstGroupId);
     }
@@ -48,12 +56,12 @@ const TaskRow = ({
 
   return (
     <div className="form-row align-items-center mb-2 border-bottom pb-2">
-      {renderFields.map(field => (
-        <div key={field} className={"col-md-" + taskRowFields[field].size}>
+      {renderFields.map((field) => (
+        <div key={field} className={`col-md-${taskRowFields[field].size}`}>
           <TextInput
             value={task[field].value}
             validationMessage={task[field].validationMessage}
-            onChange={e => editTask(field, e.target.value)}
+            onChange={(e) => editTask(field, e.target.value)}
             placeholder={taskRowFields[field].placeholder}
             disabled={taskRowFields[field].disabled}
             type={taskRowFields[field].type}
@@ -65,13 +73,13 @@ const TaskRow = ({
       <div className="col-md-1">
         <select
           className="form-control form-control-sm"
-          value={task.groupId && (groups[task.groupId.value]?.phaseId === task.phaseId.value) ? task.groupId.value : undefined}
-          onChange={e => editTask("groupId", e.target.value)}
+          value={task.groupId?.value || ""}
+          onChange={(e) => editTask("groupId", e.target.value)}
         >
           <option value="">{t("None Group")}</option>
           {Object.keys(groups)
-            .filter(gid => groups[gid].phaseId === task.phaseId.value)
-            .map(gid => (
+            .filter((gid) => groups[gid].phaseId === task.phaseId.value)
+            .map((gid) => (
               <option key={gid} value={gid}>
                 {groups[gid].name}
               </option>
@@ -86,7 +94,7 @@ const TaskRow = ({
           value={task.phaseId.value}
           onChange={handlePhaseChange}
         >
-          {Object.keys(phases).map(pid => (
+          {Object.keys(phases).map((pid) => (
             <option key={pid} value={pid}>
               {phases[pid].name}
             </option>
@@ -96,27 +104,15 @@ const TaskRow = ({
 
       {/* Estimate */}
       <div className="col-md-1">
-        <TextInput
-          value={estimate}
-          validationMessage=""
-          onChange={() => { }}
-          placeholder="Estimate"
-          disabled
-        />
+        <TextInput value={estimate} validationMessage="" onChange={() => {}} placeholder="Estimate" disabled />
       </div>
 
       {/* Cost */}
       <div className="col-md-1">
-        <TextInput
-          value={cost}
-          validationMessage=""
-          onChange={() => { }}
-          placeholder="Cost"
-          disabled
-        />
+        <TextInput value={cost} validationMessage="" onChange={() => {}} placeholder="Cost" disabled />
       </div>
 
-      {/* Reorder, Duplicate + Delete */}
+      {/* Reorder, Duplicate & Delete */}
       <div className="col-md-1 d-flex flex-column">
         <div className="mb-1">
           <button
@@ -159,24 +155,33 @@ const TaskRow = ({
   );
 };
 
+TaskRow.propTypes = {
+  taskID: PropTypes.string.isRequired,
+  task: PropTypes.object.isRequired,
+  groups: PropTypes.object.isRequired,
+  phases: PropTypes.object.isRequired,
+  config: PropTypes.object.isRequired,
+  editTask: PropTypes.func.isRequired,
+  removeTask: PropTypes.func.isRequired,
+  duplicateTask: PropTypes.func.isRequired,
+  dispatch: PropTypes.func.isRequired,
+};
+
 const makeMapStateToProps = () => {
   const getTask = makeGetTask();
   return (state, props) => ({
     task: getTask(state, props),
     groups: state.groups.groups,
     phases: state.phases.phases,
-    config: state.config
+    config: state.config,
   });
 };
 
 const mapDispatchToProps = (dispatch, props) => ({
   editTask: (key, value) => dispatch(editTaskValue(props.taskID, key, value)),
   removeTask: () => dispatch(removeTask(props.taskID)),
-  duplicateTask: id => dispatch(duplicateTask(id)),
-  dispatch
+  duplicateTask: (id) => dispatch(duplicateTask(id)),
+  dispatch,
 });
 
-export default connect(
-  makeMapStateToProps,
-  mapDispatchToProps
-)(TaskRow);
+export default connect(makeMapStateToProps, mapDispatchToProps)(TaskRow);

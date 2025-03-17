@@ -1,8 +1,22 @@
-import { SET_GLOBAL_COST, TOGGLE_GROUPS, TOGGLE_PHASES, LOAD_STATE } from "./types";
+/**
+ * @fileoverview Reducer for configuration settings.
+ */
+import {
+  SET_PROJECT_NAME,
+  SET_LANGUAGE,
+  SET_GLOBAL_COST,
+  TOGGLE_GROUPS,
+  TOGGLE_PHASES,
+  LOAD_STATE,
+} from "./types";
 import { defaultConfig } from "./config";
 
 export default function config(state = defaultConfig, action = {}) {
   switch (action.type) {
+    case SET_PROJECT_NAME:
+      return { ...state, projectName: action.projectName };
+    case SET_LANGUAGE:
+      return { ...state, language: action.language };
     case SET_GLOBAL_COST:
       return { ...state, globalCost: action.cost };
     case TOGGLE_GROUPS:

@@ -1,19 +1,27 @@
+/**
+ * @fileoverview Exports the current state into an Excel file.
+ */
 import ExcelJS from "exceljs";
 import { buildExportData } from "./buildExportData";
 import {
   computeOverallSummary,
   computePhaseSummaries,
-  computeGroupSummaries
+  computeGroupSummaries,
 } from "./summaryCalculator";
 import i18n from "../i18n";
 
+/**
+ * Exports the given state as an Excel file.
+ *
+ * @param {Object} state - The current app state.
+ */
 export const exportExcel = async (state) => {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Sunray Group";
   workbook.created = new Date();
   workbook.views = [{ x: 0, y: 0, width: 20000, height: 10000 }];
 
-  // **TASKS SHEET**
+  // Tasks Sheet
   const worksheetTasks = workbook.addWorksheet(i18n.t("Tasks"), {
     properties: { tabColor: { argb: "FF4F81BD" } },
     views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
@@ -23,10 +31,9 @@ export const exportExcel = async (state) => {
   worksheetTasks.columns = header.map((h, index) => ({
     header: h,
     key: `col${index}`,
-    width: h.length + 5, // Dynamic width
+    width: h.length + 5,
   }));
 
-  // Apply header styles
   const headerRow = worksheetTasks.getRow(1);
   headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
   headerRow.fill = {
@@ -39,10 +46,7 @@ export const exportExcel = async (state) => {
     bottom: { style: "thick", color: { argb: "FFFFFFFF" } },
   };
 
-  // Add task data
   rows.forEach((row) => worksheetTasks.addRow(row));
-
-  // Apply styles to all data rows
   worksheetTasks.eachRow((row, rowNumber) => {
     if (rowNumber !== 1) {
       row.alignment = { vertical: "middle", horizontal: "left" };
@@ -53,7 +57,7 @@ export const exportExcel = async (state) => {
     }
   });
 
-  // **SUMMARY SHEET**
+  // Summary Sheet
   const worksheetSummary = workbook.addWorksheet(i18n.t("Summary"), {
     properties: { tabColor: { argb: "FF4CAF50" } },
     views: [{ state: "frozen", xSplit: 0, ySplit: 1 }],
@@ -63,6 +67,16 @@ export const exportExcel = async (state) => {
   const phaseSummaries = computePhaseSummaries(state);
   const groupSummaries = computeGroupSummaries(state);
 
+  /**
+   * Helper to add a table to a worksheet.
+   *
+   * @param {ExcelJS.Worksheet} worksheet - The worksheet to add the table.
+   * @param {string} title - The title of the table.
+   * @param {string[]} headers - Column headers.
+   * @param {Array[]} data - Table data.
+   * @param {number} startRow - The starting row.
+   * @returns {number} The new row position.
+   */
   const addTable = (worksheet, title, headers, data, startRow) => {
     worksheet.getCell(`A${startRow}`).value = title;
     worksheet.getCell(`A${startRow}`).font = { bold: true, size: 14 };
@@ -88,7 +102,6 @@ export const exportExcel = async (state) => {
     };
 
     data.forEach((row) => worksheet.addRow(row));
-
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber > headerRowIndex) {
         row.alignment = { vertical: "middle", horizontal: "left" };
@@ -186,11 +199,10 @@ export const exportExcel = async (state) => {
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
-
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "tasks.xlsx";
+  a.download = `${state.config.projectName}_tasks.xlsx`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

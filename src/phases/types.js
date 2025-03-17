@@ -1,3 +1,6 @@
+/**
+ * @fileoverview Action type constants for phases.
+ */
 export const ADD_PHASE = "phases/ADD_PHASE";
 export const EDIT_PHASE = "phases/EDIT_PHASE";
 export const REMOVE_PHASE = "phases/REMOVE_PHASE";
